@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import EightColumnLayout from './components/EightColumnLayout';
 import { headers } from './data/headers'; // 👈 import from data
+import { columnsWithChildren } from './data/headers';
 
 export default function HomePage() {
   const [total, setTotal] = useState(1.0);
@@ -21,10 +22,17 @@ export default function HomePage() {
           </div>
         </div>
         <div className="mt-2 text-sm text-gray-600">Total: {total.toFixed(3)}</div>
-        <div className="space-x-3">
-          <EightColumnLayout headers={headers} />
+        {/* Top-Level Column Headers */}
+        <div className="mt-4 grid grid-cols-8 gap-2 font-semibold text-center border-t border-b py-2">
+          {headers.map((name, idx) => (
+            <div key={idx} className="truncate">{name}</div>
+          ))}
         </div>
       </header>
-    </div>
+      {/* Scrollable Content */}
+      <main className="flex-1 overflow-auto px-4 py-4">
+        <EightColumnLayout columns={columnsWithChildren} />
+      </main>
+   </div>
   );
 }
