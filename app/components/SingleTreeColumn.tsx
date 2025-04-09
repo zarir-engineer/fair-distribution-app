@@ -1,8 +1,13 @@
+// system import
 import React, { useEffect, useState, useRef } from 'react';
-import { initialTreeData } from '../data/initialTreeData';
 import { Lock } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+
+// custom modules import
+import { initialTreeData } from '../data/initialTreeData';
+import ProsConsModal from './ProsConsModal';
+
 
 export interface TreeNode {
   name: string;
@@ -27,6 +32,51 @@ const SingleTreeColumn = () => {
   const contentRef = useRef<HTMLDivElement>(null);
   const [showProsCons, setShowProsCons] = useState(false);
 
+  const originalPros = [
+    "We win the case",
+    "Dadaji & Dadaji take care of the property so it is not disintegrated",
+    "Their is a court receiver. This ensures accountability is with the court",
+    "Though we are in airport zone, we are not restricted to 2 storeys. "
+  ];
+
+  const originalCons = [
+    "All Dadaji's have passed away. And no outcome in this matter. Neither in court nor outside so far.",
+    "Most uncles are very senior citizens",
+    "Though their is a court receiver, encroachment is still active.",
+    "Being in airport zone, we cannot go more above 12 - 13 storey. "
+  ];
+
+  const [pros, setPros] = useState<string[]>([]);
+  const [cons, setCons] = useState<string[]>([]);
+
+  const [newPro, setNewPro] = useState("");
+  const [newCon, setNewCon] = useState("");
+
+  const handleAddPro = () => {
+    if (newPro.trim()) {
+      setPros([...pros, newPro.trim()]);
+      setNewPro("");
+    }
+  };
+
+  const handleAddCon = () => {
+    if (newCon.trim()) {
+      setCons([...cons, newCon.trim()]);
+      setNewCon("");
+    }
+  };
+
+  const handleRemovePro = (index: number) => {
+    const updated = [...pros];
+    updated.splice(index, 1);
+    setPros(updated);
+  };
+
+  const handleRemoveCon = (index: number) => {
+    const updated = [...cons];
+    updated.splice(index, 1);
+    setCons(updated);
+  };
 
   const pushToHistory = (snapshot: TreeNode[]) => {
     setHistory((prev) => [...prev, snapshot]);
@@ -250,41 +300,7 @@ const SingleTreeColumn = () => {
   return (
     <div ref={contentRef} className="flex flex-col h-screen">
       {/* pros cons modal */}
-      {showProsCons && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg w-96 shadow-lg">
-            <h2 className="text-xl font-semibold mb-2">Pros & Cons</h2>
-
-            <div className="mb-4">
-              <h3 className="font-medium">Pros:</h3>
-              <ul className="list-disc list-inside text-sm text-green-700">
-                <li>We win the case</li>
-                <li>Dadaji & Dadaji take care of the property so it is not disintegrated</li>
-                <li>Their is a court receiver. This ensures accountability is with the court</li>
-                <li>Though we are in airport zone, we are not restricted to 2 storeys. </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-medium">Cons:</h3>
-              <ul className="list-disc list-inside text-sm text-red-700">
-                <li>All Dadaji's have passed away. And no outcome in this matter. Neither in court nor outside so far.</li>
-                <li>Most uncles are very senior citizens</li>
-                <li>Though their is a court receiver, encroachment is still active.</li>
-                <li>Being in airport zone, we cannot go more above 12 - 13 storey. </li>
-                <li></li>
-              </ul>
-            </div>
-
-            <button
-              onClick={() => setShowProsCons(false)}
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      {showProsCons && <ProsConsModal onClose={() => setShowProsCons(false)} />}
 
       {/* Sticky Header */}
       <div className="bg-white shadow-md p-4 sticky top-0 z-10 flex flex-col">

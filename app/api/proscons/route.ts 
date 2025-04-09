@@ -1,0 +1,54 @@
+import { NextRequest, NextResponse } from "next/server";
+import { MongoClient } from "mongodb";
+
+// Replace this with your actual MongoDB connection string
+const uri = process.env.MONGODB_URI!;
+const dbName = "fairDistribution";
+const collectionName = "proscons";
+
+let cachedClient: MongoClient | null = null;
+
+async function getClient() {
+  if (!cachedClient) {
+    cachedClient = new MongoClient(uri);
+    await cachedClient.connect();
+  }
+  return cachedClient;
+}
+
+export async function GET() {
+  const client = await getClient();
+  const db = client.db(dbName);
+  const collection = db.collection(collectionName);
+
+  const data = await collection.find({}).toArray();
+  return NextResponse.json({ prosCons: data });
+}
+
+export async function POST(req: NextRequest) {
+  const { type, text } = await req.json();
+  if (!text || !["pro", "con"].includes(type)) {
+    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+  }
+
+  const client = await getClient();
+  const db = client.db(dbName);
+  const collection = db.collection(collectionName);
+
+  const result = await collection.insertOne({ type, text });
+  return NextResponse.json({ success: true, _id: result.insertedId });
+}
+
+export async function DELETE(req: NextRequest) {
+  const { id } = await req.json();
+  if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
+
+  const client = await getClient();
+  const db = client.db(dbName);
+  const collection = db.collection(collectionName);
+
+  const { ObjectId } = await import("mongodb");
+  await collection.deleteOne({ _id: new ObjectId(id) });
+
+  return NextResponse.json({ success: true });
+}
