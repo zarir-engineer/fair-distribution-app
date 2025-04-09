@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { initialTreeData } from '../data/initialTreeData';
 import { Lock } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { useRef } from 'react';
-
 
 export interface TreeNode {
   name: string;
@@ -27,6 +25,7 @@ const SingleTreeColumn = () => {
   const [history, setHistory] = useState<TreeNode[][]>([]);
   const [future, setFuture] = useState<TreeNode[][]>([]);
   const contentRef = useRef<HTMLDivElement>(null);
+  const [showProsCons, setShowProsCons] = useState(false);
 
 
   const pushToHistory = (snapshot: TreeNode[]) => {
@@ -248,14 +247,56 @@ const SingleTreeColumn = () => {
     </div>
   );
 
-
   return (
     <div ref={contentRef} className="flex flex-col h-screen">
+      {/* pros cons modal */}
+      {showProsCons && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg w-96 shadow-lg">
+            <h2 className="text-xl font-semibold mb-2">Pros & Cons</h2>
+
+            <div className="mb-4">
+              <h3 className="font-medium">Pros:</h3>
+              <ul className="list-disc list-inside text-sm text-green-700">
+                <li>We win the case</li>
+                <li>Dadaji & Dadaji take care of the property so it is not disintegrated</li>
+                <li>Their is a court receiver. This ensures accountability is with the court</li>
+                <li>Though we are in airport zone, we are not restricted to 2 storeys. </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-medium">Cons:</h3>
+              <ul className="list-disc list-inside text-sm text-red-700">
+                <li>All Dadaji's have passed away. And no outcome in this matter. Neither in court nor outside so far.</li>
+                <li>Most uncles are very senior citizens</li>
+                <li>Though their is a court receiver, encroachment is still active.</li>
+                <li>Being in airport zone, we cannot go more above 12 - 13 storey. </li>
+                <li></li>
+              </ul>
+            </div>
+
+            <button
+              onClick={() => setShowProsCons(false)}
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Sticky Header */}
       <div className="bg-white shadow-md p-4 sticky top-0 z-10 flex flex-col">
         <div className="flex justify-between items-center mb-2">
           <h1 className="text-xl font-bold">Distribute Fairly App</h1>
           <div className="space-x-2">
+            <button
+              onClick={() => setShowProsCons(true)}
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            >
+              Pros & Cons
+            </button>
             <button onClick={handleUndo} className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
               Undo
             </button>
