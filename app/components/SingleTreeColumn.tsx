@@ -34,17 +34,33 @@ const SingleTreeColumn = () => {
     setFuture([]); // clear future on new change
   };
 
-  const handleSaveToPDF = async () => {
-    const element = document.body; // or use a more specific ref
-    const canvas = await html2canvas(element);
+  const handleSaveAsPDF = async () => {
+    const element = document.getElementById('tree-container');
+    if (!element) return;
+
+    const filename = prompt('Enter filename for the PDF:', 'tree-data');
+    if (!filename) return; // user cancelled
+
+    const canvas = await html2canvas(element, {
+      scale: 3,
+      useCORS: true
+    });
+
     const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-    pdf.save('tree-data.pdf');
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'px',
+      format: 'a4',
+    });
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+    pdf.save(`${filename}.pdf`);
   };
+
 
   const handleUndo = () => {
     if (history.length === 0) return;
@@ -249,7 +265,7 @@ const SingleTreeColumn = () => {
             <button onClick={handleReset} className="px-3 py-1 bg-red-200 text-red-800 rounded hover:bg-red-300">
               Reset
             </button>
-            <button onClick={handleSaveToPDF} className="px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300">
+            <button onClick={handleSaveAsPDF} className="px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300">
               Save to PDF
             </button>
           </div>
@@ -291,7 +307,7 @@ const SingleTreeColumn = () => {
       </div>
 
       {/* Scrollable Grid */}
-      <div className="flex-1 overflow-auto p-4">
+      <div id="tree-container" className="flex-1 overflow-auto p-4">
         <div className="grid grid-cols-8 gap-2">
           {treeData.map((node, topLevelIndex) => (
             <div key={topLevelIndex} className="px-1">
