@@ -2,13 +2,14 @@ import { initialTreeData } from './initialTreeData';
 
 export const headers = initialTreeData.map((node) => node.name);
 
-// Recursively structure children
-const normalizeChildren = (children = []) =>
+import type { TreeNode } from "../components/SingleTreeColumn"; // Adjust path if needed
+
+const normalizeChildren = (children: any[] = []): TreeNode[] =>
   children.map((child) => ({
-    id: child.id,
     name: child.name,
     value: child.value,
-    children: normalizeChildren(child.children),
+    locked: child.locked,
+    children: normalizeChildren(child.children || []),
   }));
 
 export const columnsWithChildren = initialTreeData.map((node) => ({

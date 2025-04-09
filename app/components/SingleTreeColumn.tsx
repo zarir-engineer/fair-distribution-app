@@ -6,7 +6,7 @@ import jsPDF from 'jspdf';
 import { useRef } from 'react';
 
 
-interface TreeNode {
+export interface TreeNode {
   name: string;
   value: number;
   locked?: boolean;
