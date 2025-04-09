@@ -30,120 +30,110 @@ const SingleTreeColumn = () => {
     return node.name === 'Aaji';
   };
 
-  const updateTree = (path: number[], newValue: number, lockValue = false) => {
-    setTreeData((prevTree) => {
-      const newTree = structuredClone(prevTree);
-      const parent = newTree[path[0]];
-      const childPath = path.slice(1);
+  const rebalanceSiblings = (siblings: TreeNode[], editedIdx: number, delta: number) => {
+    const editedNode = siblings[editedIdx];
+    const others = siblings.filter((_, i) => i !== editedIdx && !siblings[i].locked);
+    const totalUnlocked = others.reduce((sum, s) => sum + s.value, 0);
 
-      let nodeToUpdate: TreeNode;
-      if (childPath.length) {
-        nodeToUpdate = getNodeByPath(parent, childPath);
-      } else {
-        nodeToUpdate = parent;
-      }
-
-      const parentValueBefore = parent.value;
-      const delta = newValue - nodeToUpdate.value;
-      nodeToUpdate.value = parseFloat(newValue.toFixed(6));
-      if (lockValue) nodeToUpdate.locked = true;
-
-      if (childPath.length) {
-        const siblings = getNodeByPath(parent, childPath.slice(0, -1)).children || [];
-        const totalUnlocked = siblings.filter(n => !n.locked && n !== nodeToUpdate).reduce((acc, n) => acc + n.value, 0);
-
-        siblings.forEach((sibling) => {
-          if (sibling !== nodeToUpdate && !sibling.locked) {
-            const ratio = sibling.value / totalUnlocked;
-            sibling.value = parseFloat((sibling.value - ratio * delta).toFixed(6));
-          }
-        });
-
-        // Recalculate parent value from children
-        parent.value = parseFloat((parent.children?.reduce((sum, c) => sum + c.value, 0) ?? 0).toFixed(6));
-      } else {
-        // Top-level node edited, redistribute to other top-level nodes
-        const unlocked = newTree.filter(n => !n.locked && n !== nodeToUpdate);
-        const totalUnlocked = unlocked.reduce((sum, n) => sum + n.value, 0);
-
-        unlocked.forEach((node) => {
-          const ratio = node.value / totalUnlocked;
-          node.value = parseFloat((node.value - ratio * delta).toFixed(6));
-        });
-      }
-
-      return newTree;
+    others.forEach((sibling) => {
+      const ratio = sibling.value / totalUnlocked;
+      sibling.value = parseFloat((sibling.value - ratio * delta).toFixed(6));
     });
   };
 
+  const updateChildNode = (
+    treeCopy: TreeNode[],
+    path: number[],
+    newValue: number,
+    delta: number
+  ) => {
+    const [topLevelIdx, ...childPath] = path;
+    const topLevelNode = treeCopy[topLevelIdx];
+    const parentNode = getNodeByPath(topLevelNode, childPath.slice(0, -1));
+    const siblings = parentNode.children!;
+    const editedNode = getNodeByPath(topLevelNode, childPath);
 
-  const rebalanceSiblings = (siblings: TreeNode[], editedIdx: number) => {
-    const editedNode = siblings[editedIdx];
-    const total = siblings.reduce((sum, node) => sum + node.value, 0);
+    // 🔐 Rule 2: Check BEFORE value is changed
+    if (topLevelNode.children) {
+      const unlocked = topLevelNode.children.filter(c => !c.locked);
+      if (unlocked.length === 1 && unlocked[0] === editedNode) {
+        topLevelNode.children.forEach(c => c.locked = true);
+        topLevelNode.locked = true;
+        return; // Prevent any changes, everything is now locked
+      }
+    }
 
-    const unlockedIndices = siblings
-      .map((s, i) => (!s.locked && i !== editedIdx ? i : -1))
-      .filter((i) => i !== -1);
+    // Rebalance and then apply the change
+    rebalanceSiblings(siblings, childPath[childPath.length - 1], delta);
 
-    const lockedTotal = siblings
-      .filter((s, i) => s.locked || i === editedIdx)
-      .reduce((sum, s) => sum + s.value, 0);
+    if (editedNode) {
+      editedNode.value = parseFloat(newValue.toFixed(6));
+    }
 
-    const remaining = 1 - lockedTotal;
+    // Update top-level node value to match sum of children
+    topLevelNode.value = parseFloat(
+      topLevelNode.children!.reduce((sum, c) => sum + c.value, 0).toFixed(6)
+    );
+  };
 
-    if (remaining < 0 || unlockedIndices.length === 0) return;
+  const updateTopLevelNode = (
+    treeCopy: TreeNode[],
+    path: number[],
+    newValue: number,
+    delta: number
+  ) => {
+    const [topLevelIdx] = path;
+    const topLevelNode = treeCopy[topLevelIdx];
+    const siblings = treeCopy.filter((_, i) => i !== topLevelIdx);
 
-    const oldSum = unlockedIndices.reduce((sum, i) => sum + siblings[i].value, 0);
+    rebalanceSiblings([topLevelNode, ...siblings], 0, delta);
+    topLevelNode.value = parseFloat(newValue.toFixed(6));
 
-    for (let i of unlockedIndices) {
-      const oldVal = siblings[i].value;
-      const newVal = oldSum === 0 ? remaining / unlockedIndices.length : (oldVal / oldSum) * remaining;
-      siblings[i].value = parseFloat(newVal.toFixed(6));
+    // Rebalance children to match top-level
+    if (topLevelNode.children) {
+      const avg = topLevelNode.value / topLevelNode.children.length;
+      topLevelNode.children.forEach((child) => {
+        if (!child.locked) {
+          child.value = parseFloat(avg.toFixed(6));
+        }
+      });
+    }
+
+    // Lock children when top-level is locked
+    if (topLevelNode.locked && topLevelNode.children) {
+      topLevelNode.children.forEach(child => {
+        child.locked = true;
+      });
     }
   };
 
   const handleChange = (path: number[], newValue: number) => {
     const currentPath = getPath(path);
-
     setTreeData((prev) => {
-      const treeCopy = JSON.parse(JSON.stringify(prev)); // Deep clone
+      const treeCopy = JSON.parse(JSON.stringify(prev));
       const [topLevelIdx, ...childPath] = path;
       const topLevelNode = treeCopy[topLevelIdx];
-
-      // Lock previous node if we're editing a different node now
-      if (editingPath && editingPath !== currentPath) {
-        const [prevIdx, ...prevChildPath] = editingPath.split('-').map(Number);
-        const prevParent = treeCopy[prevIdx];
-        const prevNode = getNodeByPath(prevParent, prevChildPath);
-        if (prevNode) {
-          prevNode.locked = true;
-        }
-      }
-
-      setEditingPath(currentPath); // Update current editing path
-
       const editedNode = getNodeByPath(topLevelNode, childPath);
 
       if (!editedNode || editedNode.name === 'Aaji') return prev;
 
-      editedNode.value = parseFloat(newValue.toFixed(6)); // Set full precision
-      editedNode.locked = false;
-
-      // Rebalance siblings
-      if (childPath.length > 0) {
-        const parentNode = getNodeByPath(topLevelNode, childPath.slice(0, -1));
-        const siblings = parentNode.children!;
-        rebalanceSiblings(siblings, childPath[childPath.length - 1]);
-      } else {
-        const siblings = treeCopy.filter((_, i) => i !== topLevelIdx);
-        rebalanceSiblings([topLevelNode, ...siblings], 0);
+      // Lock previous node if needed
+      if (editingPath && editingPath !== currentPath) {
+        const [prevIdx, ...prevChildPath] = editingPath.split('-').map(Number);
+        const prevParent = treeCopy[prevIdx];
+        const prevNode = getNodeByPath(prevParent, prevChildPath);
+        if (prevNode) prevNode.locked = true;
       }
 
-      // Ensure top-level node value matches children sum
-      const updatedTopValue = topLevelNode.children
-        ? topLevelNode.children.reduce((sum, child) => sum + child.value, 0)
-        : topLevelNode.value;
-      topLevelNode.value = parseFloat(updatedTopValue.toFixed(6));
+      setEditingPath(currentPath);
+
+      const delta = newValue - editedNode.value;
+
+      if (childPath.length > 0) {
+        updateChildNode(treeCopy, path, newValue, delta);
+      } else {
+        updateTopLevelNode(treeCopy, path, newValue, delta);
+      }
 
       return treeCopy;
     });
@@ -164,7 +154,7 @@ const SingleTreeColumn = () => {
           </button>
 
           <span className="w-16 text-center border px-2 py-1 rounded bg-white">
-            {round(node.value)}
+            {node.value.toFixed(3)}
           </span>
 
           <button
