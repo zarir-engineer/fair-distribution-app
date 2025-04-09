@@ -76,39 +76,109 @@ const SingleTreeColumn = () => {
     });
   };
 
-  const handleChange = (path: number[], newValue: number) => {
-    if (!editingPath) {
-      setEditingPath(getPath(path));
-      updateTree(path, newValue, false);
-    } else {
-      const [prevParentIdx, ...rest] = editingPath.split('-').map(Number);
-      if (rest.length) {
-        const prevParent = treeData[prevParentIdx];
-        const prevNode = getNodeByPath(prevParent, rest);
-        prevNode.locked = true;
-      } else {
-        treeData[prevParentIdx].locked = true;
-      }
-      setEditingPath(getPath(path));
-      updateTree(path, newValue, false);
+
+  const rebalanceSiblings = (siblings: TreeNode[], editedIdx: number) => {
+    const editedNode = siblings[editedIdx];
+    const total = siblings.reduce((sum, node) => sum + node.value, 0);
+
+    const unlockedIndices = siblings
+      .map((s, i) => (!s.locked && i !== editedIdx ? i : -1))
+      .filter((i) => i !== -1);
+
+    const lockedTotal = siblings
+      .filter((s, i) => s.locked || i === editedIdx)
+      .reduce((sum, s) => sum + s.value, 0);
+
+    const remaining = 1 - lockedTotal;
+
+    if (remaining < 0 || unlockedIndices.length === 0) return;
+
+    const oldSum = unlockedIndices.reduce((sum, i) => sum + siblings[i].value, 0);
+
+    for (let i of unlockedIndices) {
+      const oldVal = siblings[i].value;
+      const newVal = oldSum === 0 ? remaining / unlockedIndices.length : (oldVal / oldSum) * remaining;
+      siblings[i].value = parseFloat(newVal.toFixed(6));
     }
+  };
+
+  const handleChange = (path: number[], newValue: number) => {
+    const currentPath = getPath(path);
+
+    setTreeData((prev) => {
+      const treeCopy = JSON.parse(JSON.stringify(prev)); // Deep clone
+      const [topLevelIdx, ...childPath] = path;
+      const topLevelNode = treeCopy[topLevelIdx];
+
+      // Lock previous node if we're editing a different node now
+      if (editingPath && editingPath !== currentPath) {
+        const [prevIdx, ...prevChildPath] = editingPath.split('-').map(Number);
+        const prevParent = treeCopy[prevIdx];
+        const prevNode = getNodeByPath(prevParent, prevChildPath);
+        if (prevNode) {
+          prevNode.locked = true;
+        }
+      }
+
+      setEditingPath(currentPath); // Update current editing path
+
+      const editedNode = getNodeByPath(topLevelNode, childPath);
+
+      if (!editedNode || editedNode.name === 'Aaji') return prev;
+
+      editedNode.value = parseFloat(newValue.toFixed(6)); // Set full precision
+      editedNode.locked = false;
+
+      // Rebalance siblings
+      if (childPath.length > 0) {
+        const parentNode = getNodeByPath(topLevelNode, childPath.slice(0, -1));
+        const siblings = parentNode.children!;
+        rebalanceSiblings(siblings, childPath[childPath.length - 1]);
+      } else {
+        const siblings = treeCopy.filter((_, i) => i !== topLevelIdx);
+        rebalanceSiblings([topLevelNode, ...siblings], 0);
+      }
+
+      // Ensure top-level node value matches children sum
+      const updatedTopValue = topLevelNode.children
+        ? topLevelNode.children.reduce((sum, child) => sum + child.value, 0)
+        : topLevelNode.value;
+      topLevelNode.value = parseFloat(updatedTopValue.toFixed(6));
+
+      return treeCopy;
+    });
   };
 
   const renderNode = (node: TreeNode, path: number[] = []) => (
     <div key={path.join('-')} className="p-2 border mb-1 bg-white rounded shadow">
-      <div className={`flex items-center gap-2 ${getPath(path) === editingPath ? 'ring ring-blue-400' : ''}`}>
+      <div className="flex items-center gap-2">
         <span className="w-24 font-medium truncate">{node.name}</span>
-        <input
-          type="number"
-          step="0.001"
-          min="0"
-          max="1"
-          disabled={node.name === 'Aaji' || node.locked || aajiAncestorCheck(path)}
-          value={round(node.value)}
-          onChange={(e) => handleChange(path, parseFloat(e.target.value))}
-          className="w-24 border px-2 py-1 rounded"
-        />
-        {(node.name === 'Aaji' || node.locked || aajiAncestorCheck(path)) && <Lock size={14} className="text-gray-500" />}
+
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => handleChange(path, round(node.value - 0.001))}
+            disabled={node.name === 'Aaji' || node.locked || aajiAncestorCheck(path)}
+            className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+          >
+            −
+          </button>
+
+          <span className="w-16 text-center border px-2 py-1 rounded bg-white">
+            {round(node.value)}
+          </span>
+
+          <button
+            onClick={() => handleChange(path, round(node.value + 0.001))}
+            disabled={node.name === 'Aaji' || node.locked || aajiAncestorCheck(path)}
+            className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+          >
+            +
+          </button>
+
+          {(node.name === 'Aaji' || node.locked || aajiAncestorCheck(path)) && (
+            <Lock size={14} className="text-gray-500 ml-2" />
+          )}
+        </div>
       </div>
       {node.children && (
         <div className="ml-6 mt-2">
