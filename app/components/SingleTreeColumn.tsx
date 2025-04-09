@@ -259,23 +259,46 @@ const SingleTreeColumn = () => {
         </div>
       </div>
 
-
-	{/* Top-Level Nodes in Header */}
-	<div className="grid grid-cols-8 gap-2">
-	  {treeData.map((node, index) => (
-	    <div key={index} className="p-2 bg-gray-100 rounded shadow text-center">
-	      <div className="font-medium truncate">{node.name}</div>
-	      <div className="text-sm">{node.value.toFixed(3)}</div>
-	    </div>
-	  ))}
-	</div>
-
+      {/* Top-Level Nodes in Header */}
+      <div className="grid grid-cols-8 gap-2">
+        {treeData.map((node, index) => (
+          <div key={index} className="p-2 bg-gray-100 rounded shadow text-center">
+            <div className="flex items-center justify-between border border-gray-300 rounded px-2 py-1 bg-white shadow-sm w-full">
+              <span className="font-medium truncate">{node.name}</span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => handleChange([index], round(node.value - 0.001))}
+                  disabled={node.name === 'Aaji' || node.locked}
+                  className="text-sm px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
+                >
+                  −
+                </button>
+                <span className="w-16 text-center border px-2 py-1 rounded bg-white">
+                  {node.value.toFixed(3)}
+                </span>
+                <button
+                  onClick={() => handleChange([index], round(node.value + 0.001))}
+                  disabled={node.name === 'Aaji' || node.locked}
+                  className="text-sm px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
+                >
+                  +
+                </button>
+                {(node.name === 'Aaji' || node.locked) && <Lock size={14} className="text-gray-500 ml-2" />}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* Scrollable Grid */}
       <div className="flex-1 overflow-auto p-4">
         <div className="grid grid-cols-8 gap-2">
-          {treeData.map((node, index) => (
-            <div key={index} className="px-1">{renderNode(node, [index])}</div>
+          {treeData.map((node, topLevelIndex) => (
+            <div key={topLevelIndex} className="px-1">
+              {node.children?.map((child, childIndex) =>
+                renderNode(child, [topLevelIndex, childIndex])
+              )}
+            </div>
           ))}
         </div>
       </div>
