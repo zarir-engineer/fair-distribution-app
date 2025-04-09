@@ -46,6 +46,7 @@ const EightColumnLayout: React.FC<EightColumnLayoutProps> = ({ columns }) => {
   };
 
   return (
+
     <div className="w-full overflow-x-auto">
       {/* Header Row - Resizable */}
       <div className="flex border-b text-sm font-semibold text-gray-700">
