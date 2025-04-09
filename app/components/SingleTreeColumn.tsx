@@ -3,6 +3,8 @@ import { initialTreeData } from '../data/initialTreeData';
 import { Lock } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { useRef } from 'react';
+
 
 interface TreeNode {
   name: string;
@@ -24,13 +26,15 @@ const SingleTreeColumn = () => {
   const [editingPath, setEditingPath] = useState<string>('');
   const [history, setHistory] = useState<TreeNode[][]>([]);
   const [future, setFuture] = useState<TreeNode[][]>([]);
+  const contentRef = useRef<HTMLDivElement>(null);
+
 
   const pushToHistory = (snapshot: TreeNode[]) => {
     setHistory((prev) => [...prev, snapshot]);
     setFuture([]); // clear future on new change
   };
 
-  const handleSave = async () => {
+  const handleSaveToPDF = async () => {
     const element = document.body; // or use a more specific ref
     const canvas = await html2canvas(element);
     const imgData = canvas.toDataURL('image/png');
@@ -62,8 +66,6 @@ const SingleTreeColumn = () => {
     pushToHistory(treeData);
     setTreeData(initialTreeData);
   };
-
-
 
   const aajiAncestorCheck = (path: number[]) => {
     let node = treeData[path[0]];
@@ -156,7 +158,11 @@ const SingleTreeColumn = () => {
     const currentPath = getPath(path);
     setTreeData((prev) => {
       const treeCopy = JSON.parse(JSON.stringify(prev));
-      pushToHistory(prev);
+
+      // ⏪ Save to history before change
+      setHistory((h) => [...h, prev]);
+      setFuture([]); // clear redo stack
+
       const [topLevelIdx, ...childPath] = path;
       const topLevelNode = treeCopy[topLevelIdx];
       const editedNode = getNodeByPath(topLevelNode, childPath);
@@ -228,31 +234,45 @@ const SingleTreeColumn = () => {
 
 
   return (
-    <div className="h-screen flex flex-col">
+    <div ref={contentRef} className="flex flex-col h-screen">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-10 bg-white shadow-md px-4 py-2 flex justify-between items-center">
-        <div className="text-xl font-semibold">Distribute Fairly App</div>
-        <div className="text-lg">
-          Total: {treeData.reduce((sum, node) => sum + node.value, 0).toFixed(3)}
+      <div className="bg-white shadow-md p-4 sticky top-0 z-10 flex flex-col">
+        <div className="flex justify-between items-center mb-2">
+          <h1 className="text-xl font-bold">Distribute Fairly App</h1>
+          <div className="space-x-2">
+            <button onClick={handleUndo} className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
+              Undo
+            </button>
+            <button onClick={handleRedo} className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
+              Redo
+            </button>
+            <button onClick={handleReset} className="px-3 py-1 bg-red-200 text-red-800 rounded hover:bg-red-300">
+              Reset
+            </button>
+            <button onClick={handleSaveToPDF} className="px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300">
+              Save to PDF
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <button onClick={handleUndo} className="px-3 py-1 bg-blue-100 hover:bg-blue-200 rounded">
-            Undo
-          </button>
-          <button onClick={handleRedo} className="px-3 py-1 bg-blue-100 hover:bg-blue-200 rounded">
-            Redo
-          </button>
-          <button onClick={handleReset} className="px-3 py-1 bg-yellow-100 hover:bg-yellow-200 rounded">
-            Reset
-          </button>
-          <button onClick={handleSave} className="px-3 py-1 bg-green-100 hover:bg-green-200 rounded">
-            Save to PDF
-          </button>
+        <div className="text-lg font-semibold">
+          Total: {treeData.reduce((sum, node) => sum + node.value, 0).toFixed(3)}
         </div>
       </div>
 
-      {/* Scrollable Tree Grid */}
-      <div className="overflow-auto flex-1 p-2">
+
+	{/* Top-Level Nodes in Header */}
+	<div className="grid grid-cols-8 gap-2">
+	  {treeData.map((node, index) => (
+	    <div key={index} className="p-2 bg-gray-100 rounded shadow text-center">
+	      <div className="font-medium truncate">{node.name}</div>
+	      <div className="text-sm">{node.value.toFixed(3)}</div>
+	    </div>
+	  ))}
+	</div>
+
+
+      {/* Scrollable Grid */}
+      <div className="flex-1 overflow-auto p-4">
         <div className="grid grid-cols-8 gap-2">
           {treeData.map((node, index) => (
             <div key={index} className="px-1">{renderNode(node, [index])}</div>
