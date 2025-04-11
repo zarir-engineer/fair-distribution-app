@@ -31,6 +31,8 @@ const SingleTreeColumn = () => {
   const [future, setFuture] = useState<TreeNode[][]>([]);
   const contentRef = useRef<HTMLDivElement>(null);
   const [showProsCons, setShowProsCons] = useState(false);
+  const [totalAmount, setTotalAmount] = useState<number>(30); // default in Cr
+  const [showActuals, setShowActuals] = useState<boolean>(false);
 
   const originalPros = [
     "We win the case",
@@ -271,8 +273,10 @@ const SingleTreeColumn = () => {
               −
             </button>
 
-            <span className="w-[52px] text-center border px-1 py-0.5 rounded bg-white">
-              {node.value.toFixed(3)}
+            <span className="w-[70px] text-center border px-1 py-0.5 rounded bg-white">
+              {showActuals
+                ? `${(node.value * totalAmount).toFixed(2)} Cr`
+                : node.value.toFixed(3)}
             </span>
 
             <button
@@ -326,6 +330,26 @@ const SingleTreeColumn = () => {
               Save to PDF
             </button>
           </div>
+          <div className="flex flex-col gap-2 text-sm">
+            <div>
+              <label className="block mb-1">Total (Cr):</label>
+              <input
+                type="number"
+                min={0}
+                step={1}
+                value={totalAmount}
+                onChange={(e) => setTotalAmount(parseFloat(e.target.value))}
+                className="w-[100px] px-2 py-1 border rounded text-sm"
+              />
+            </div>
+
+            <button
+              onClick={() => setShowActuals(!showActuals)}
+              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+            >
+              {showActuals ? 'Show Fractions' : 'Show Actuals'}
+            </button>
+          </div>
         </div>
         <div className="text-lg font-semibold">
           Total: {treeData.reduce((sum, node) => sum + node.value, 0).toFixed(3)}
@@ -347,7 +371,10 @@ const SingleTreeColumn = () => {
                   −
                 </button>
                 <span className="w-16 text-center border px-2 py-1 rounded bg-white">
-                  {node.value.toFixed(3)}
+                  {showActuals
+                    ? (node.value * totalAmount).toFixed(2)  // actual amount
+                    : node.value.toFixed(3)                 // fraction
+                  }
                 </span>
                 <button
                   onClick={() => handleChange([index], round(node.value + 0.001))}
