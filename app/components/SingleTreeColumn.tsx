@@ -313,10 +313,15 @@ const SingleTreeColumn = () => {
       {showProsCons && <ProsConsModal onClose={() => setShowProsCons(false)} />}
 
       {/* Sticky Header */}
-      <div className="bg-white shadow-md p-4 sticky top-0 z-10 flex flex-col">
-        <div className="flex justify-between items-center mb-2">
-          <h1 className="text-xl font-bold">Distribute Fairly App</h1>
-          <div className="space-x-2">
+      <div className="bg-white shadow-md p-4 sticky top-0 z-10" style={{ minHeight: '150px' }}>
+        <div className="grid grid-cols-3 gap-4 items-start mb-2">
+          {/* Left: Title */}
+          <div className="flex items-center">
+            <h1 className="text-xl font-bold">Distribute Fairly App</h1>
+          </div>
+
+          {/* Center: Buttons */}
+          <div className="flex flex-wrap justify-center items-center gap-2">
             <button
               onClick={() => setShowProsCons(true)}
               className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
@@ -336,7 +341,9 @@ const SingleTreeColumn = () => {
               Save to PDF
             </button>
           </div>
-          <div className="flex flex-col gap-2 text-sm">
+
+          {/* Right: Controls */}
+          <div className="flex flex-col items-end gap-2 text-sm">
             <div>
               <label className="block mb-1">Total (Cr):</label>
               <input
@@ -348,39 +355,46 @@ const SingleTreeColumn = () => {
                 className="w-[100px] px-2 py-1 border rounded text-sm"
               />
             </div>
-
-            <button
-              onClick={() => setShowActuals(!showActuals)}
-              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-            >
-              {showActuals ? 'Show Fractions' : 'Show Actuals'}
-            </button>
-          </div>
-        </div>
-        {!showActuals && (
-          <div className="flex items-center gap-4">
-            <div className="text-lg font-semibold">
-              Percentage:
-            </div>
-            <div
-              onClick={handleTogglePercentage}
-              className={`relative w-32 h-8 flex items-center cursor-pointer rounded-full p-1 transition-colors duration-300 ${
-                usePercentageOf66 ? 'bg-orange-500' : 'bg-pink-300'
-              }`}
-            >
-              {/* Moving knob */}
-              <div
-                className={`bg-white w-8 h-6 rounded-full shadow-md transform transition-transform duration-300 ${
-                  usePercentageOf66 ? 'translate-x-[5.5rem]' : 'translate-x-0'
-                }`}
-              />
-              {/* Center text */}
-              <div className="absolute inset-0 flex items-center justify-center text-sm font-medium text-white">
-                {usePercentageOf66 ? '66.67' : '1.000'}
+            <div className="flex flex-col items-end gap-2">
+              <button
+                onClick={() => setShowActuals(!showActuals)}
+                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+              >
+                <span className="inline-block w-32 text-center">
+                  {showActuals ? 'Show Fractions' : 'Show Actuals'}
+                </span>
+              </button>
+              <div className="h-10 flex items-center">
+                <div
+                  className={`transition-opacity duration-300 ${
+                    showActuals ? 'invisible opacity-0' : 'visible opacity-100'
+                  }`}
+                >
+                  {!showActuals && (
+                    <div className="flex items-center gap-4">
+                      <div className="text-lg font-semibold">Percentage:</div>
+                      <div
+                        onClick={handleTogglePercentage}
+                        className={`relative w-32 h-8 flex items-center cursor-pointer rounded-full p-1 transition-colors duration-300 ${
+                          usePercentageOf66 ? 'bg-orange-500' : 'bg-pink-300'
+                        }`}
+                      >
+                        <div
+                          className={`bg-white w-8 h-6 rounded-full shadow-md transform transition-transform duration-300 ${
+                            usePercentageOf66 ? 'translate-x-[5.5rem]' : 'translate-x-0'
+                          }`}
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center text-sm font-medium text-white">
+                          {usePercentageOf66 ? '66.67' : '1.000'}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Top-Level Nodes in Header */}
