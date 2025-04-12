@@ -33,6 +33,12 @@ const SingleTreeColumn = () => {
   const [showProsCons, setShowProsCons] = useState(false);
   const [totalAmount, setTotalAmount] = useState<number>(30); // default in Cr
   const [showActuals, setShowActuals] = useState<boolean>(false);
+  const [showPercentageAsHundred, setShowPercentageAsHundred] = useState(false);
+  const [usePercentageOf66, setUsePercentageOf66] = useState(false);
+
+  const handleTogglePercentage = () => {
+    setUsePercentageOf66(prev => !prev);
+  };
 
   const originalPros = [
     "We win the case",
@@ -351,9 +357,30 @@ const SingleTreeColumn = () => {
             </button>
           </div>
         </div>
-        <div className="text-lg font-semibold">
-          Total: {treeData.reduce((sum, node) => sum + node.value, 0).toFixed(3)}
-        </div>
+        {!showActuals && (
+          <div className="flex items-center gap-4">
+            <div className="text-lg font-semibold">
+              Percentage:
+            </div>
+            <div
+              onClick={handleTogglePercentage}
+              className={`relative w-32 h-8 flex items-center cursor-pointer rounded-full p-1 transition-colors duration-300 ${
+                usePercentageOf66 ? 'bg-orange-500' : 'bg-pink-300'
+              }`}
+            >
+              {/* Moving knob */}
+              <div
+                className={`bg-white w-8 h-6 rounded-full shadow-md transform transition-transform duration-300 ${
+                  usePercentageOf66 ? 'translate-x-[5.5rem]' : 'translate-x-0'
+                }`}
+              />
+              {/* Center text */}
+              <div className="absolute inset-0 flex items-center justify-center text-sm font-medium text-white">
+                {usePercentageOf66 ? '66.67' : '1.000'}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Top-Level Nodes in Header */}
@@ -373,7 +400,9 @@ const SingleTreeColumn = () => {
                 <span className="w-16 text-center border px-2 py-1 rounded bg-white">
                   {showActuals
                     ? (node.value * totalAmount).toFixed(2)  // actual amount
-                    : node.value.toFixed(3)                 // fraction
+                    : usePercentageOf66
+                      ? (node.value * 66.67).toFixed(2)
+                      : node.value.toFixed(3)
                   }
                 </span>
                 <button
