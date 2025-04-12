@@ -323,14 +323,14 @@ const SingleTreeColumn = () => {
           <div className="flex flex-wrap justify-center items-center gap-2 sm:justify-start sm:col-span-2">
             <button
               onClick={() => setShowProsCons(true)}
-              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              className="px-3 py-1 bg-teal-100 rounded hover:bg-green-100"
             >
               Pros & Cons
             </button>
-            <button onClick={handleUndo} className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
+            <button onClick={handleUndo} className="px-3 py-1 bg-gray-300 rounded hover:bg-gray-100">
               Undo
             </button>
-            <button onClick={handleRedo} className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
+            <button onClick={handleRedo} className="px-3 py-1 bg-gray-100 rounded hover:bg-gray-300">
               Redo
             </button>
             <button onClick={handleReset} className="px-3 py-1 bg-red-200 text-red-800 rounded hover:bg-red-300">
@@ -381,7 +381,7 @@ const SingleTreeColumn = () => {
                   <div
                     onClick={handleTogglePercentage}
                     className={`relative w-32 h-8 flex items-center cursor-pointer rounded-full p-1 transition-colors duration-300 ${
-                      usePercentageOf66 ? 'bg-red-200' : 'bg-blue-200'
+                      usePercentageOf66 ? 'bg-red-200 hover:bg-red-400' : 'bg-blue-200 hover:bg-blue-400'
                     }`}
                   >
                     <div
