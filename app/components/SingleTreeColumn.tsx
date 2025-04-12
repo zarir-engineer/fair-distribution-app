@@ -313,14 +313,14 @@ const SingleTreeColumn = () => {
 
       {/* Sticky Header */}
       <div className="bg-white shadow-md p-4 sticky top-0 z-10" style={{ minHeight: '150px' }}>
-        <div className="grid grid-cols-3 gap-4 items-start mb-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start mb-2">
           {/* Left: Title */}
-          <div className="flex items-center">
+          <div className="flex items-center justify-center sm:justify-start">
             <h1 className="text-xl font-bold">Distribute Fairly App</h1>
           </div>
 
           {/* Center: Buttons */}
-          <div className="flex flex-wrap justify-center items-center gap-2">
+          <div className="flex flex-wrap justify-center items-center gap-2 sm:justify-start">
             <button
               onClick={() => setShowProsCons(true)}
               className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
@@ -342,7 +342,7 @@ const SingleTreeColumn = () => {
           </div>
 
           {/* Right: Controls */}
-          <div className="flex flex-col items-end gap-2 text-sm">
+          <div className="flex flex-col items-center sm:items-end gap-2 text-sm">
             <div>
               <label className="block mb-1">Total (Cr):</label>
               <input
@@ -354,7 +354,7 @@ const SingleTreeColumn = () => {
                 className="w-[100px] px-2 py-1 border rounded text-sm"
               />
             </div>
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex flex-col items-center sm:items-end gap-2">
               <button
                 onClick={() => setShowActuals(!showActuals)}
                 className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
@@ -397,9 +397,12 @@ const SingleTreeColumn = () => {
       </div>
 
       {/* Top-Level Nodes in Header */}
-      <div className="grid grid-cols-8 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-8 gap-2 sm:gap-4">
         {treeData.map((node, index) => (
-          <div key={index} className="p-2 bg-gray-100 rounded shadow text-center">
+          <div
+            key={index}
+            className="p-2 bg-gray-100 rounded shadow text-center sm:w-auto w-full"
+          >
             <div className="flex items-center justify-between border border-gray-300 rounded px-2 py-1 bg-white shadow-sm w-full">
               <span className="font-medium truncate">{node.name}</span>
               <div className="flex items-center gap-1">
@@ -414,8 +417,8 @@ const SingleTreeColumn = () => {
                   {showActuals
                     ? (node.value * totalAmount).toFixed(2)  // actual amount
                     : usePercentageOf66
-                      ? (node.value * 66.67).toFixed(2)
-                      : node.value.toFixed(3)
+                    ? (node.value * 66.67).toFixed(2)
+                    : node.value.toFixed(3)
                   }
                 </span>
                 <button
