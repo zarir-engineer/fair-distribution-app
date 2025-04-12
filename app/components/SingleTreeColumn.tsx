@@ -320,7 +320,7 @@ const SingleTreeColumn = () => {
           </div>
 
           {/* Center: Buttons */}
-          <div className="flex flex-wrap justify-center items-center gap-2 sm:justify-start">
+          <div className="flex flex-wrap justify-center items-center gap-2 sm:justify-start sm:col-span-2">
             <button
               onClick={() => setShowProsCons(true)}
               className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
@@ -342,19 +342,23 @@ const SingleTreeColumn = () => {
           </div>
 
           {/* Right: Controls */}
-          <div className="flex flex-col items-center sm:items-end gap-2 text-sm">
-            <div>
-              <label className="block mb-1">Total (Cr):</label>
-              <input
-                type="number"
-                min={0}
-                step={1}
-                value={totalAmount}
-                onChange={(e) => setTotalAmount(parseFloat(e.target.value))}
-                className="w-[100px] px-2 py-1 border rounded text-sm"
-              />
-            </div>
-            <div className="flex flex-col items-center sm:items-end gap-2">
+          <div className="flex flex-wrap items-center sm:items-end gap-2 text-sm sm:col-span-1 w-full">
+            {/* Controls for Total (Cr), Show Actuals, and Percentage */}
+            <div className="flex flex-wrap items-center justify-between gap-4 w-full sm:w-auto">
+              {/* Total (Cr) */}
+              <div className="w-full sm:w-auto">
+                <label className="block mb-1">Total (Cr):</label>
+                <input
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={totalAmount}
+                  onChange={(e) => setTotalAmount(parseFloat(e.target.value))}
+                  className="w-full sm:w-[100px] px-2 py-1 border rounded text-sm"
+                />
+              </div>
+
+              {/* Show Actuals button */}
               <button
                 onClick={() => setShowActuals(!showActuals)}
                 className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
@@ -363,34 +367,34 @@ const SingleTreeColumn = () => {
                   {showActuals ? 'Show Fractions' : 'Show Actuals'}
                 </span>
               </button>
-              <div className="h-10 flex items-center">
-                <div
-                  className={`transition-opacity duration-300 ${
-                    showActuals ? 'invisible opacity-0' : 'visible opacity-100'
-                  }`}
-                >
-                  {!showActuals && (
-                    <div className="flex items-center gap-4">
-                      <div className="text-lg font-semibold">Percentage:</div>
-                      <div
-                        onClick={handleTogglePercentage}
-                        className={`relative w-32 h-8 flex items-center cursor-pointer rounded-full p-1 transition-colors duration-300 ${
-                          usePercentageOf66 ? 'bg-red-200' : 'bg-blue-200'
-                        }`}
-                      >
-                        <div
-                          className={`bg-white w-8 h-6 rounded-full shadow-md transform transition-transform duration-300 ${
-                            usePercentageOf66 ? 'translate-x-[5.5rem]' : 'translate-x-0'
-                          }`}
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center text-sm font-medium text-white">
-                          {usePercentageOf66 ? '66.67' : '1.000'}
-                        </div>
-                      </div>
+            </div>
+
+            {/* Percentage */}
+            <div
+              className={`transition-opacity duration-300 w-full sm:w-auto ${
+                showActuals ? 'invisible opacity-0' : 'visible opacity-100'
+              }`}
+            >
+              {!showActuals && (
+                <div className="flex items-center gap-4 w-full justify-center sm:justify-start">
+                  <div className="text-lg font-semibold">Percentage:</div>
+                  <div
+                    onClick={handleTogglePercentage}
+                    className={`relative w-32 h-8 flex items-center cursor-pointer rounded-full p-1 transition-colors duration-300 ${
+                      usePercentageOf66 ? 'bg-red-200' : 'bg-blue-200'
+                    }`}
+                  >
+                    <div
+                      className={`bg-white w-8 h-6 rounded-full shadow-md transform transition-transform duration-300 ${
+                        usePercentageOf66 ? 'translate-x-[5.5rem]' : 'translate-x-0'
+                      }`}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center text-sm font-medium text-white">
+                      {usePercentageOf66 ? '66.67' : '1.000'}
                     </div>
-                  )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
