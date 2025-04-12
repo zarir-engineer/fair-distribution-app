@@ -396,43 +396,101 @@ const SingleTreeColumn = () => {
         </div>
       </div>
 
-      {/* Top-Level Nodes in Header */}
-      <div className="grid grid-cols-1 sm:grid-cols-8 gap-2 sm:gap-4">
-        {treeData.map((node, index) => (
-          <div
-            key={index}
-            className="p-2 bg-gray-100 rounded shadow text-center sm:w-auto w-full"
-          >
-            <div className="flex items-center justify-between border border-gray-300 rounded px-2 py-1 bg-white shadow-sm w-full">
-              <span className="font-medium truncate">{node.name}</span>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => handleChange([index], round(node.value - 0.001))}
-                  disabled={node.name === 'Aaji' || node.locked}
-                  className="text-sm px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
-                >
-                  −
-                </button>
-                <span className="w-16 text-center border px-2 py-1 rounded bg-white">
-                  {showActuals
-                    ? (node.value * totalAmount).toFixed(2)  // actual amount
-                    : usePercentageOf66
-                    ? (node.value * 66.67).toFixed(2)
-                    : node.value.toFixed(3)
-                  }
-                </span>
-                <button
-                  onClick={() => handleChange([index], round(node.value + 0.001))}
-                  disabled={node.name === 'Aaji' || node.locked}
-                  className="text-sm px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
-                >
-                  +
-                </button>
-                {(node.name === 'Aaji' || node.locked) && <Lock size={14} className="text-gray-500 ml-2" />}
+      {/* Responsive Tree Structure */}
+      <div className="w-full">
+        {/* Desktop: Separate Grids */}
+        <div className="hidden sm:grid grid-cols-8 gap-2">
+          {treeData.map((node, index) => (
+            <div key={index} className="p-2 bg-gray-100 rounded shadow text-center">
+              {/* Top-level content same as before */}
+              <div className="flex items-center justify-between border border-gray-300 rounded px-2 py-1 bg-white shadow-sm w-full">
+                <span className="font-medium truncate">{node.name}</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handleChange([index], round(node.value - 0.001))}
+                    disabled={node.name === 'Aaji' || node.locked}
+                    className="text-sm px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
+                  >
+                    −
+                  </button>
+                  <span className="w-16 text-center border px-2 py-1 rounded bg-white">
+                    {showActuals
+                      ? (node.value * totalAmount).toFixed(2)
+                      : usePercentageOf66
+                      ? (node.value * 66.67).toFixed(2)
+                      : node.value.toFixed(3)}
+                  </span>
+                  <button
+                    onClick={() => handleChange([index], round(node.value + 0.001))}
+                    disabled={node.name === 'Aaji' || node.locked}
+                    className="text-sm px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
+                  >
+                    +
+                  </button>
+                  {(node.name === 'Aaji' || node.locked) && (
+                    <Lock size={14} className="text-gray-500 ml-2" />
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+
+        {/* Desktop: Child Grid */}
+        <div className="hidden sm:grid grid-cols-8 gap-2 mt-2">
+          {treeData.map((node, topLevelIndex) => (
+            <div key={topLevelIndex} className="px-1">
+              {node.children?.map((child, childIndex) =>
+                renderNode(child, [topLevelIndex, childIndex])
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Mobile: Top-level and children stacked */}
+        <div className="sm:hidden flex flex-col gap-4 mt-4">
+          {treeData.map((node, index) => (
+            <div key={index} className="bg-gray-100 rounded shadow p-2">
+              {/* Top-level */}
+              <div className="flex items-center justify-between border border-gray-300 rounded px-2 py-1 bg-white shadow-sm w-full mb-2">
+                <span className="font-medium truncate">{node.name}</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handleChange([index], round(node.value - 0.001))}
+                    disabled={node.name === 'Aaji' || node.locked}
+                    className="text-sm px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
+                  >
+                    −
+                  </button>
+                  <span className="w-16 text-center border px-2 py-1 rounded bg-white">
+                    {showActuals
+                      ? (node.value * totalAmount).toFixed(2)
+                      : usePercentageOf66
+                      ? (node.value * 66.67).toFixed(2)
+                      : node.value.toFixed(3)}
+                  </span>
+                  <button
+                    onClick={() => handleChange([index], round(node.value + 0.001))}
+                    disabled={node.name === 'Aaji' || node.locked}
+                    className="text-sm px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
+                  >
+                    +
+                  </button>
+                  {(node.name === 'Aaji' || node.locked) && (
+                    <Lock size={14} className="text-gray-500 ml-2" />
+                  )}
+                </div>
+              </div>
+
+              {/* Children */}
+              <div className="flex flex-col gap-2">
+                {node.children?.map((child, childIndex) =>
+                  renderNode(child, [index, childIndex])
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Scrollable Grid */}
