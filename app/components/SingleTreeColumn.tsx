@@ -375,7 +375,7 @@ const SingleTreeColumn = () => {
                       <div
                         onClick={handleTogglePercentage}
                         className={`relative w-32 h-8 flex items-center cursor-pointer rounded-full p-1 transition-colors duration-300 ${
-                          usePercentageOf66 ? 'bg-orange-500' : 'bg-pink-300'
+                          usePercentageOf66 ? 'bg-red-200' : 'bg-blue-200'
                         }`}
                       >
                         <div
