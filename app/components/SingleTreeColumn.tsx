@@ -8,7 +8,6 @@ import jsPDF from 'jspdf';
 import { initialTreeData } from '../data/initialTreeData';
 import ProsConsModal from './ProsConsModal';
 
-
 export interface TreeNode {
   name: string;
   value: number;
