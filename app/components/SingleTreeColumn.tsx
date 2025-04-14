@@ -3,7 +3,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Lock } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { Scale, Calculator } from "lucide-react";
 
 // custom modules import
 import { initialTreeData } from '../data/initialTreeData';
@@ -34,7 +33,6 @@ const SingleTreeColumn = () => {
   const [showActuals, setShowActuals] = useState<boolean>(false);
   const [showPercentageAsHundred, setShowPercentageAsHundred] = useState(false);
   const [usePercentageOf66, setUsePercentageOf66] = useState(false);
-
 
   const handleTogglePercentage = () => {
     setUsePercentageOf66(prev => !prev);
@@ -357,9 +355,10 @@ const SingleTreeColumn = () => {
           </div>
 
           {/* Second Row: Centered Controls */}
-          <div className="flex flex-wrap justify-center items-center gap-1 px-2 py-1 text-sm">
+          <div className="flex flex-nowrap justify-center items-center gap-2 px-2 py-1 text-sm overflow-x-auto">
+
             {/* Total CR */}
-            <div className="flex items-center gap-1 min-w-[140px] justify-center">
+            <div className="flex items-center gap-1 min-w-[120px] justify-center">
               <span className="text-sm font-medium">Total (Cr):</span>
               <input
                 type="number"
@@ -372,32 +371,32 @@ const SingleTreeColumn = () => {
             </div>
 
             {/* Actuals Toggle */}
-            <div className="px-1 py-0.5 min-w-[100px] flex justify-center">
+            <div className="flex items-center justify-center min-w-[90px]">
               <button
                 onClick={() => setShowActuals(!showActuals)}
-                className="px-1 py-0.5 bg-blue-500 text-white text-xs rounded-sm hover:bg-blue-600"
+                className="px-1 py-0.5 bg-blue-500 text-white text-xs rounded-sm hover:bg-blue-600 whitespace-nowrap"
                 title={showActuals ? "Show Fractions" : "Show Actuals"}
               >
-                {showActuals ? <Scale size={12} /> : <Calculator size={12} />}
+                {showActuals ? 'Fractions' : 'Actuals'}
               </button>
             </div>
 
-            {/* Percentage Toggle: Always visible, just hidden */}
+            {/* Percentage Toggle */}
             <div
-              className={`flex items-center gap-2 transition-opacity duration-300 min-w-[150px] justify-center ${
+              className={`flex items-center gap-1 transition-opacity duration-300 min-w-[120px] justify-center ${
                 showActuals ? 'opacity-0 invisible' : 'opacity-100 visible'
               }`}
             >
-              <div className="font-medium">Percentage:</div>
+              <span className="font-medium whitespace-nowrap">Percentage:</span>
               <div
                 onClick={handleTogglePercentage}
-                className={`relative w-24 h-7 flex items-center cursor-pointer rounded-full p-1 transition-colors duration-300 ${
+                className={`relative w-20 h-6 flex items-center cursor-pointer rounded-full p-1 transition-colors duration-300 ${
                   usePercentageOf66 ? 'bg-red-200 hover:bg-red-400' : 'bg-blue-200 hover:bg-blue-400'
                 }`}
               >
                 <div
-                  className={`bg-white w-6 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
-                    usePercentageOf66 ? 'translate-x-[4.0rem]' : 'translate-x-0'
+                  className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
+                    usePercentageOf66 ? 'translate-x-[2.7rem]' : 'translate-x-0'
                   }`}
                 />
                 <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-white">
