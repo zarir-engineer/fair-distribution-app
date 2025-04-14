@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Lock } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { Scale, Calculator } from "lucide-react";
 
 // custom modules import
 import { initialTreeData } from '../data/initialTreeData';
@@ -33,7 +34,6 @@ const SingleTreeColumn = () => {
   const [showActuals, setShowActuals] = useState<boolean>(false);
   const [showPercentageAsHundred, setShowPercentageAsHundred] = useState(false);
   const [usePercentageOf66, setUsePercentageOf66] = useState(false);
-  import { Scale, Calculator } from "lucide-react";
 
 
   const handleTogglePercentage = () => {
