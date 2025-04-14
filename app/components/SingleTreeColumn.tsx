@@ -509,7 +509,7 @@ const SingleTreeColumn = () => {
           {treeData.map((node, topLevelIndex) => (
             <div key={topLevelIndex} className="px-1">
               {node.children?.map((child, childIndex) =>
-                renderNode(child, [index, childIndex], showActuals, totalAmount, usePercentageOf66)
+                renderNode(child, [topLevelIndex, childIndex], showActuals, totalAmount, usePercentageOf66)
               )}
             </div>
           ))}
