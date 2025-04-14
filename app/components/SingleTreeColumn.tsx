@@ -263,7 +263,13 @@ const SingleTreeColumn = () => {
     });
   };
 
-  const renderNode = (node: TreeNode, path: number[] = []) => (
+  const renderNode = (
+    node: TreeNode,
+    path: number[] = [],
+    showActuals: boolean,
+    totalAmount: number,
+    usePercentageOf66: boolean
+  ) => (
     <div key={path.join('-')} className="p-1 border bg-white rounded shadow-sm text-sm">
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between gap-1">
@@ -281,6 +287,8 @@ const SingleTreeColumn = () => {
             <span className="w-[70px] text-center border px-1 py-0.5 rounded bg-white">
               {showActuals
                 ? `${(node.value * totalAmount).toFixed(2)} Cr`
+                : usePercentageOf66
+                ? (node.value * 66.67).toFixed(2)
                 : node.value.toFixed(3)}
             </span>
 
@@ -297,9 +305,12 @@ const SingleTreeColumn = () => {
             )}
           </div>
         </div>
+
         {node.children && (
           <div className="ml-4">
-            {node.children.map((child, i) => renderNode(child, [...path, i]))}
+            {node.children.map((child, i) =>
+              renderNode(child, [...path, i], showActuals, totalAmount, usePercentageOf66)
+            )}
           </div>
         )}
       </div>
@@ -313,88 +324,84 @@ const SingleTreeColumn = () => {
 
       {/* Sticky Header */}
       <div className="bg-white shadow-md p-4 sticky top-0 z-10" style={{ minHeight: '150px' }}>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start mb-2">
-          {/* Left: Title */}
-          <div className="flex items-center justify-center sm:justify-start">
-            <h1 className="text-xl font-bold">Distribute Fairly App</h1>
+        <div className="grid grid-cols-1 gap-2">
+
+          {/* First Row: Title */}
+          <div className="flex flex-wrap items-center justify-center sm:justify-center gap-2">
+            <h1 className="text-lg font-semibold w-full text-left sm:text-left sm:w-auto">
+              Distribute Fairly App
+            </h1>
           </div>
 
-          {/* Center: Buttons */}
-          <div className="flex flex-wrap justify-center items-center gap-2 sm:justify-start sm:col-span-2">
+          {/* First Row: Centered Buttons */}
+          <div className="flex justify-center w-full flex-wrap gap-1">
             <button
               onClick={() => setShowProsCons(true)}
-              className="px-3 py-1 bg-teal-100 rounded hover:bg-green-100"
+              className="p-1 px-2 bg-teal-100 text-sm rounded hover:bg-green-100"
             >
-              Pros & Cons
+              Insights
             </button>
-            <button onClick={handleUndo} className="px-3 py-1 bg-gray-300 rounded hover:bg-gray-100">
-              Undo
+            <button onClick={handleUndo} className="p-1 bg-gray-300 rounded hover:bg-gray-100" title="Undo">
+              ↶
             </button>
-            <button onClick={handleRedo} className="px-3 py-1 bg-gray-100 rounded hover:bg-gray-300">
-              Redo
+            <button onClick={handleRedo} className="p-1 bg-gray-100 rounded hover:bg-gray-300" title="Redo">
+              ↷
             </button>
-            <button onClick={handleReset} className="px-3 py-1 bg-red-200 text-red-800 rounded hover:bg-red-300">
-              Reset
+            <button onClick={handleReset} className="p-1 bg-red-200 text-red-800 rounded hover:bg-red-300" title="Reset">
+              ⟳
             </button>
-            <button onClick={handleSaveAsPDF} className="px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300">
-              Save to PDF
+            <button onClick={handleSaveAsPDF} className="p-1 px-2 bg-blue-200 text-blue-800 text-sm rounded hover:bg-blue-300">
+              PDF
             </button>
           </div>
 
-          {/* Right: Controls */}
-          <div className="flex flex-wrap items-center sm:items-end gap-2 text-sm sm:col-span-1 w-full">
-            {/* Controls for Total (Cr), Show Actuals, and Percentage */}
-            <div className="flex flex-wrap items-center justify-between gap-4 w-full sm:w-auto">
-              {/* Total (Cr) */}
-              <div className="w-full sm:w-auto">
-                <label className="block mb-1">Total (Cr):</label>
-                <input
-                  type="number"
-                  min={0}
-                  step={1}
-                  value={totalAmount}
-                  onChange={(e) => setTotalAmount(parseFloat(e.target.value))}
-                  className="w-full sm:w-[100px] px-2 py-1 border rounded text-sm"
-                />
-              </div>
+          {/* Second Row: Centered Controls */}
+          <div className="flex flex-wrap justify-center items-center gap-4 text-sm">
+            {/* Total CR */}
+            <div className="flex items-center gap-1 min-w-[140px] justify-center">
+              <span className="text-sm font-medium">Total (Cr):</span>
+              <input
+                type="number"
+                min={0}
+                step={1}
+                value={totalAmount}
+                onChange={(e) => setTotalAmount(parseFloat(e.target.value))}
+                className="w-[80px] px-2 py-1 border rounded text-sm"
+              />
+            </div>
 
-              {/* Show Actuals button */}
+            {/* Actuals Toggle */}
+            <div className="min-w-[100px] flex justify-center">
               <button
                 onClick={() => setShowActuals(!showActuals)}
-                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 w-full"
               >
-                <span className="inline-block w-32 text-center">
-                  {showActuals ? 'Show Fractions' : 'Show Actuals'}
-                </span>
+                {showActuals ? 'Fractions' : 'Actuals'}
               </button>
             </div>
 
-            {/* Percentage */}
+            {/* Percentage Toggle: Always visible, just hidden */}
             <div
-              className={`transition-opacity duration-300 w-full sm:w-auto ${
-                showActuals ? 'invisible opacity-0' : 'visible opacity-100'
+              className={`flex items-center gap-2 transition-opacity duration-300 min-w-[150px] justify-center ${
+                showActuals ? 'opacity-0 invisible' : 'opacity-100 visible'
               }`}
             >
-              {!showActuals && (
-                <div className="flex items-center gap-4 w-full justify-center sm:justify-start">
-                  <div className="text-lg font-semibold">Percentage:</div>
-                  <div
-                    onClick={handleTogglePercentage}
-                    className={`relative w-32 h-8 flex items-center cursor-pointer rounded-full p-1 transition-colors duration-300 ${
-                      usePercentageOf66 ? 'bg-red-200 hover:bg-red-400' : 'bg-blue-200 hover:bg-blue-400'
-                    }`}
-                  >
-                    <div
-                      className={`bg-white w-8 h-6 rounded-full shadow-md transform transition-transform duration-300 ${
-                        usePercentageOf66 ? 'translate-x-[5.5rem]' : 'translate-x-0'
-                      }`}
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center text-sm font-medium text-white">
-                      {usePercentageOf66 ? '66.67' : '1.000'}
-                    </div>
-                  </div>
+              <div className="font-medium">Percentage:</div>
+              <div
+                onClick={handleTogglePercentage}
+                className={`relative w-24 h-7 flex items-center cursor-pointer rounded-full p-1 transition-colors duration-300 ${
+                  usePercentageOf66 ? 'bg-red-200 hover:bg-red-400' : 'bg-blue-200 hover:bg-blue-400'
+                }`}
+              >
+                <div
+                  className={`bg-white w-6 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
+                    usePercentageOf66 ? 'translate-x-[4.0rem]' : 'translate-x-0'
+                  }`}
+                />
+                <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-white">
+                  {usePercentageOf66 ? '66.67' : '1.000'}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
@@ -445,7 +452,7 @@ const SingleTreeColumn = () => {
           {treeData.map((node, topLevelIndex) => (
             <div key={topLevelIndex} className="px-1">
               {node.children?.map((child, childIndex) =>
-                renderNode(child, [topLevelIndex, childIndex])
+                renderNode(child, [topLevelIndex, childIndex], showActuals, totalAmount, usePercentageOf66)
               )}
             </div>
           ))}
@@ -489,7 +496,7 @@ const SingleTreeColumn = () => {
               {/* Children */}
               <div className="flex flex-col gap-2">
                 {node.children?.map((child, childIndex) =>
-                  renderNode(child, [index, childIndex])
+                  renderNode(child, [index, childIndex], showActuals, totalAmount, usePercentageOf66)
                 )}
               </div>
             </div>
