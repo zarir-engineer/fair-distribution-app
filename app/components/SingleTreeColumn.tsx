@@ -16,7 +16,6 @@ export interface TreeNode {
 }
 
 const round = (num: number) => parseFloat(num.toFixed(3));
-
 const getPath = (path: number[]) => path.join('-');
 
 const getNodeByPath = (node: TreeNode, path: number[]): TreeNode => {
@@ -521,4 +520,3 @@ const SingleTreeColumn = () => {
 };
 
 export default SingleTreeColumn;
-/* Recreated after power failure */
