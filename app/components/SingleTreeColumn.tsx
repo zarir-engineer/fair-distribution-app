@@ -265,9 +265,9 @@ const SingleTreeColumn = () => {
   const renderNode = (
     node: TreeNode,
     path: number[] = [],
-    showActuals: boolean,
-    totalAmount: number,
-    usePercentageOf66: boolean
+    showActuals = false,
+    totalAmount = 0,
+    usePercentageOf66 = false
   ) => (
     <div key={path.join('-')} className="p-1 border bg-white rounded shadow-sm text-sm">
       <div className="flex flex-col gap-1">
@@ -355,7 +355,7 @@ const SingleTreeColumn = () => {
           </div>
 
           {/* Second Row: Centered Controls */}
-          <div className="flex flex-wrap justify-center items-center gap-4 text-sm">
+          <div className="flex flex-wrap justify-center items-center gap-1 px-2 py-1 text-sm">
             {/* Total CR */}
             <div className="flex items-center gap-1 min-w-[140px] justify-center">
               <span className="text-sm font-medium">Total (Cr):</span>
@@ -365,17 +365,18 @@ const SingleTreeColumn = () => {
                 step={1}
                 value={totalAmount}
                 onChange={(e) => setTotalAmount(parseFloat(e.target.value))}
-                className="w-[80px] px-2 py-1 border rounded text-sm"
+                className="w-[50px] px-1 py-0.5 border rounded text-sm"
               />
             </div>
 
             {/* Actuals Toggle */}
-            <div className="min-w-[100px] flex justify-center">
+            <div className="px-1 py-0.5 min-w-[100px] flex justify-center">
               <button
                 onClick={() => setShowActuals(!showActuals)}
-                className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 w-full"
+                className="px-1 py-0.5 bg-blue-500 text-white text-xs rounded-sm hover:bg-blue-600"
+                title={showActuals ? "Show Fractions" : "Show Actuals"}
               >
-                {showActuals ? 'Fractions' : 'Actuals'}
+                {showActuals ? <Scale size={12} /> : <Calculator size={12} />}
               </button>
             </div>
 
