@@ -33,6 +33,8 @@ const SingleTreeColumn = () => {
   const [showActuals, setShowActuals] = useState<boolean>(false);
   const [showPercentageAsHundred, setShowPercentageAsHundred] = useState(false);
   const [usePercentageOf66, setUsePercentageOf66] = useState(false);
+  import { Scale, Calculator } from "lucide-react";
+
 
   const handleTogglePercentage = () => {
     setUsePercentageOf66(prev => !prev);
