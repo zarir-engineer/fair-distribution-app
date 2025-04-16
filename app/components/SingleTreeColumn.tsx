@@ -28,7 +28,6 @@ const SingleTreeColumn = () => {
   const [history, setHistory] = useState<TreeNode[][]>([]);
   const [future, setFuture] = useState<TreeNode[][]>([]);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [showProsCons, setShowProsCons] = useState(false);
   const [totalAmount, setTotalAmount] = useState<number>(30); // default in Cr
   const [showActuals, setShowActuals] = useState<boolean>(false);
   const [showPercentageAsHundred, setShowPercentageAsHundred] = useState(false);
@@ -318,8 +317,6 @@ const SingleTreeColumn = () => {
 
   return (
     <div ref={contentRef} className="flex flex-col h-screen">
-      {/* pros cons modal */}
-      {showProsCons && <ProsConsModal onClose={() => setShowProsCons(false)} />}
 
       {/* Sticky Header */}
       <div className="bg-white shadow-md p-4 sticky top-0 z-10" style={{ minHeight: '150px' }}>
@@ -334,12 +331,6 @@ const SingleTreeColumn = () => {
 
           {/* First Row: Centered Buttons */}
           <div className="flex justify-center w-full flex-wrap gap-1">
-            <button
-              onClick={() => setShowProsCons(true)}
-              className="p-1 px-2 bg-teal-100 text-sm rounded hover:bg-green-100"
-            >
-              Insights
-            </button>
             <button onClick={handleUndo} className="p-1 bg-gray-300 rounded hover:bg-gray-100" title="Undo">
               ↶
             </button>

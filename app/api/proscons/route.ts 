@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import { MongoClient } from "mongodb";
+// /app/api/proscons/route.ts
 
-// Replace this with your actual MongoDB connection string
+import { NextRequest, NextResponse } from "next/server";
+import { MongoClient, ObjectId } from "mongodb";
+
 const uri = process.env.MONGODB_URI!;
 const dbName = "fairDistribution";
 const collectionName = "proscons";
@@ -26,29 +27,37 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const { type, text } = await req.json();
-  if (!text || !["pro", "con"].includes(type)) {
-    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+  try {
+    const { type, text } = await req.json();
+    if (!text || !["pro", "con"].includes(type)) {
+      return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    }
+
+    const client = await getClient();
+    const db = client.db(dbName);
+    const collection = db.collection(collectionName);
+
+    const result = await collection.insertOne({ type, text });
+    return NextResponse.json({ insertedId: result.insertedId });
+  } catch (err) {
+    console.error("POST error:", err);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
-
-  const client = await getClient();
-  const db = client.db(dbName);
-  const collection = db.collection(collectionName);
-
-  const result = await collection.insertOne({ type, text });
-  return NextResponse.json({ success: true, _id: result.insertedId });
 }
 
 export async function DELETE(req: NextRequest) {
-  const { id } = await req.json();
-  if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
+  try {
+    const { id } = await req.json();
+    if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
 
-  const client = await getClient();
-  const db = client.db(dbName);
-  const collection = db.collection(collectionName);
+    const client = await getClient();
+    const db = client.db(dbName);
+    const collection = db.collection(collectionName);
 
-  const { ObjectId } = await import("mongodb");
-  await collection.deleteOne({ _id: new ObjectId(id) });
-
-  return NextResponse.json({ success: true });
+    await collection.deleteOne({ _id: new ObjectId(id) });
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("DELETE error:", err);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
 }
