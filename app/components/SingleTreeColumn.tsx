@@ -1,6 +1,6 @@
 // system import
 import React, { useEffect, useState, useRef } from 'react';
-import { Lock } from 'lucide-react';
+import { Lock, Unlock } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -18,9 +18,6 @@ export interface TreeNode {
 const round = (num: number) => parseFloat(num.toFixed(3));
 const getPath = (path: number[]) => path.join('-');
 
-const getNodeByPath = (node: TreeNode, path: number[]): TreeNode => {
-  return path.reduce((acc, idx) => acc.children?.[idx] || acc, node);
-};
 
 const SingleTreeColumn = () => {
   const [treeData, setTreeData] = useState<TreeNode[]>(initialTreeData);
@@ -32,6 +29,7 @@ const SingleTreeColumn = () => {
   const [showActuals, setShowActuals] = useState<boolean>(false);
   const [showPercentageAsHundred, setShowPercentageAsHundred] = useState(false);
   const [usePercentageOf66, setUsePercentageOf66] = useState(false);
+  const getTopLevelIndex = (path: number[]) => path[0];
 
   const handleTogglePercentage = () => {
     setUsePercentageOf66(prev => !prev);
@@ -192,6 +190,15 @@ const SingleTreeColumn = () => {
     );
   };
 
+  const getNodeByPath = (tree: TreeNode[] | TreeNode, path: number[]): TreeNode | null => {
+    let node = Array.isArray(tree) ? tree[path[0]] : tree;
+    for (let i = Array.isArray(tree) ? 1 : 0; i < path.length; i++) {
+      if (!node?.children) return null;
+      node = node.children[path[i]];
+    }
+    return node;
+  };
+
   const updateTopLevelNode = (
     treeCopy: TreeNode[],
     path: number[],
@@ -222,6 +229,26 @@ const SingleTreeColumn = () => {
         child.locked = true;
       });
     }
+  };
+
+  const toggleLock = (path: number[]) => {
+    setTreeData(prevTree => {
+      const deepCopy = JSON.parse(JSON.stringify(prevTree)); // ensures state triggers re-render
+      let node = deepCopy;
+
+      for (let i = 0; i < path.length - 1; i++) {
+        node = node[path[i]].children!;
+      }
+
+      const target = node[path[path.length - 1]];
+      target.locked = !target.locked;
+
+      if (!target.locked && target.children) {
+        target.children.forEach(child => (child.locked = false));
+      }
+
+      return deepCopy;
+    });
   };
 
   const handleChange = (path: number[], newValue: number) => {
@@ -271,39 +298,62 @@ const SingleTreeColumn = () => {
     <div key={path.join('-')} className="p-1 border bg-white rounded shadow-sm text-sm">
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between gap-1">
-          <span className="truncate w-[80px]">{node.name}</span>
+          <div className="flex items-center gap-1 w-[100px]">
+            {/* 🔒 Show lock icon only for top-level nodes that are NOT Aaji */}
+            {path.length > 0 && !aajiAncestorCheck(path) && (
+              <button
+                   onClick={() => toggleLock(path)}
+                className="ml-1 text-yellow-500"
+                title={treeData[path[0]].locked ? 'Unlock' : 'Lock'}
+              >
+                {treeData[path[0]].locked ? (
+                  <Lock size={12} />
+                ) : (
+                  <Unlock size={12} />
+                )}
+              </button>
+            )}
+            <span className="truncate">{node.name}</span>
+          </div>
 
           <div className="flex items-center gap-0.5">
             <button
               onClick={() => handleChange(path, round(node.value - 0.001))}
-              disabled={node.name === 'Aaji' || node.locked || aajiAncestorCheck(path)}
+              disabled={
+                getNodeByPath(treeData, path)?.locked ||
+                getNodeByPath(treeData, path)?.name === 'Aaji' ||
+                aajiAncestorCheck(path)
+              }
               className="px-1 py-0.5 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
             >
               −
             </button>
 
-            <span className="w-[70px] text-center border px-1 py-0.5 rounded bg-white">
-              {showActuals
-                ? `${(node.value * totalAmount).toFixed(2)} Cr`
-                : usePercentageOf66
-                ? (node.value * 66.67).toFixed(2)
-                : node.value.toFixed(3)}
-            </span>
+            <div className="flex items-center gap-1">
+              <span className="w-[70px] text-center border px-1 py-0.5 rounded bg-white">
+                {showActuals
+                  ? `${(node.value * totalAmount).toFixed(2)} Cr`
+                  : usePercentageOf66
+                  ? (node.value * 66.67).toFixed(2)
+                  : node.value.toFixed(3)}
+              </span>
+
+            </div>
 
             <button
               onClick={() => handleChange(path, round(node.value + 0.001))}
-              disabled={node.name === 'Aaji' || node.locked || aajiAncestorCheck(path)}
+              disabled={
+                getNodeByPath(treeData, path)?.locked ||
+                getNodeByPath(treeData, path)?.name === 'Aaji' ||
+                aajiAncestorCheck(path)
+              }
               className="px-1 py-0.5 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
             >
               +
             </button>
 
-            {(node.name === 'Aaji' || node.locked || aajiAncestorCheck(path)) && (
-              <Lock size={12} className="text-gray-500 ml-1" />
-            )}
           </div>
         </div>
-
         {node.children && (
           <div className="ml-4">
             {node.children.map((child, i) =>
@@ -365,7 +415,7 @@ const SingleTreeColumn = () => {
             <div className="flex items-center justify-center min-w-[90px]">
               <button
                 onClick={() => setShowActuals(!showActuals)}
-                className="px-1 py-0.5 bg-blue-500 text-white text-xs rounded-sm hover:bg-blue-600 whitespace-nowrap"
+                className="px-2.5 py-1.5 bg-blue-500 text-white text-xs rounded-sm hover:bg-blue-600 whitespace-nowrap"
                 title={showActuals ? "Show Fractions" : "Show Actuals"}
               >
                 {showActuals ? 'Fractions' : 'Actuals'}
