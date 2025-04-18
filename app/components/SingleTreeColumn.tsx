@@ -308,7 +308,7 @@ const SingleTreeColumn = () => {
       <div key={path.join('-')} className="p-1 border bg-white rounded shadow-sm text-sm">
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between gap-1">
-            <div className="flex items-center gap-1 w-[100px]">
+            <div className="flex items-center gap-1 min-w-0 sm:w-[100px]">
               {path.length > 0 && !aajiAncestorCheck(path) && currentNode && (
                 <button
                   onClick={() => toggleLock(path)}
@@ -318,7 +318,7 @@ const SingleTreeColumn = () => {
                   <img
                     src={currentNode.locked ? "/icons/lock-red.png" : "/icons/unlock-green.png"}
                     alt={currentNode.locked ? "Locked" : "Unlocked"}
-                    className="w-5 h-5"
+                    className="w-5 h-5 transition-transform duration-300 hover:scale-110 shrink-0"
                   />
                 </button>
               )}
