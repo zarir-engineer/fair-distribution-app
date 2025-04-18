@@ -1,8 +1,9 @@
 // system import
 import React, { useEffect, useState, useRef } from 'react';
-import { Lock, Unlock } from 'lucide-react';
+import { Lock, Unlock, Zap } from "lucide-react"; // Zap as bright icon
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { cn } from "@/lib/utils"; // for combining classes
 
 // custom modules import
 import { initialTreeData } from '../data/initialTreeData';
@@ -18,6 +19,11 @@ export interface TreeNode {
 const round = (num: number) => parseFloat(num.toFixed(3));
 const getPath = (path: number[]) => path.join('-');
 
+const BrightTransition = () => (
+  <div className="flex items-center justify-center my-2">
+    <Zap className="text-yellow-400 animate-pulse w-8 h-8" />
+  </div>
+);
 
 const SingleTreeColumn = () => {
   const [treeData, setTreeData] = useState<TreeNode[]>(initialTreeData);
@@ -30,6 +36,7 @@ const SingleTreeColumn = () => {
   const [showPercentageAsHundred, setShowPercentageAsHundred] = useState(false);
   const [usePercentageOf66, setUsePercentageOf66] = useState(false);
   const getTopLevelIndex = (path: number[]) => path[0];
+
 
   const handleTogglePercentage = () => {
     setUsePercentageOf66(prev => !prev);
@@ -302,15 +309,15 @@ const SingleTreeColumn = () => {
             {/* 🔒 Show lock icon only for top-level nodes that are NOT Aaji */}
             {path.length > 0 && !aajiAncestorCheck(path) && (
               <button
-                   onClick={() => toggleLock(path)}
-                className="ml-1 text-yellow-500"
+                onClick={() => toggleLock(path)}
+                className="ml-1"
                 title={treeData[path[0]].locked ? 'Unlock' : 'Lock'}
               >
-                {treeData[path[0]].locked ? (
-                  <Lock size={12} />
-                ) : (
-                  <Unlock size={12} />
-                )}
+                <img
+                  src={treeData[path[0]].locked ? '/icons/lock-green.png' : '/icons/unlock-red.png'}
+                  alt={treeData[path[0]].locked ? 'Locked' : 'Unlocked'}
+                  className="w-6 h-6 transition-transform duration-200 hover:scale-110"
+                />
               </button>
             )}
             <span className="truncate">{node.name}</span>
@@ -356,9 +363,27 @@ const SingleTreeColumn = () => {
         </div>
         {node.children && (
           <div className="ml-4">
-            {node.children.map((child, i) =>
-              renderNode(child, [...path, i], showActuals, totalAmount, usePercentageOf66)
-            )}
+            {node.children.map((child, i) => {
+              const currentPath = [...path, i];
+              const currentChild = child;
+              const nextChild = node.children[i + 1];
+
+              const shouldInsertTransition =
+                nextChild &&
+                ((currentChild.locked && !nextChild.locked) ||
+                 (!currentChild.locked && nextChild.locked));
+
+              return (
+                <React.Fragment key={currentPath.join('-')}>
+                  {renderNode(child, currentPath, showActuals, totalAmount, usePercentageOf66)}
+                  {shouldInsertTransition && (
+                    <div className="flex justify-center my-1">
+                      <Zap className="text-yellow-400 animate-pulse w-6 h-6" />
+                    </div>
+                  )}
+                </React.Fragment>
+              );
+            })}
           </div>
         )}
       </div>
