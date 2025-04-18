@@ -301,94 +301,96 @@ const SingleTreeColumn = () => {
     showActuals = false,
     totalAmount = 0,
     usePercentageOf66 = false
-  ) => (
-    <div key={path.join('-')} className="p-1 border bg-white rounded shadow-sm text-sm">
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center justify-between gap-1">
-          <div className="flex items-center gap-1 w-[100px]">
-            {/* 🔒 Show lock icon only for top-level nodes that are NOT Aaji */}
-            {path.length > 0 && !aajiAncestorCheck(path) && (
-              <button
-                onClick={() => toggleLock(path)}
-                className="ml-1"
-                title={treeData[path[0]].locked ? 'Unlock' : 'Lock'}
-              >
-                <img
-                  src={treeData[path[0]].locked ? '/icons/lock-green.png' : '/icons/unlock-red.png'}
-                  alt={treeData[path[0]].locked ? 'Locked' : 'Unlocked'}
-                  className="w-6 h-6 transition-transform duration-200 hover:scale-110"
-                />
-              </button>
-            )}
-            <span className="truncate">{node.name}</span>
-          </div>
+  ) => {
+    const currentNode = getNodeByPath(treeData, path);
 
-          <div className="flex items-center gap-0.5">
-            <button
-              onClick={() => handleChange(path, round(node.value - 0.001))}
-              disabled={
-                getNodeByPath(treeData, path)?.locked ||
-                getNodeByPath(treeData, path)?.name === 'Aaji' ||
-                aajiAncestorCheck(path)
-              }
-              className="px-1 py-0.5 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
-            >
-              −
-            </button>
-
-            <div className="flex items-center gap-1">
-              <span className="w-[70px] text-center border px-1 py-0.5 rounded bg-white">
-                {showActuals
-                  ? `${(node.value * totalAmount).toFixed(2)} Cr`
-                  : usePercentageOf66
-                  ? (node.value * 66.67).toFixed(2)
-                  : node.value.toFixed(3)}
-              </span>
-
+    return (
+      <div key={path.join('-')} className="p-1 border bg-white rounded shadow-sm text-sm">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center justify-between gap-1">
+            <div className="flex items-center gap-1 w-[100px]">
+              {path.length > 0 && !aajiAncestorCheck(path) && currentNode && (
+                <button
+                  onClick={() => toggleLock(path)}
+                  className="ml-1"
+                  title={currentNode.locked ? 'Unlock' : 'Lock'}
+                >
+                  <img
+                    src={currentNode.locked ? "/icons/lock-red.png" : "/icons/unlock-green.png"}
+                    alt={currentNode.locked ? "Locked" : "Unlocked"}
+                    className="w-5 h-5"
+                  />
+                </button>
+              )}
+              <span className="truncate">{node.name}</span>
             </div>
 
-            <button
-              onClick={() => handleChange(path, round(node.value + 0.001))}
-              disabled={
-                getNodeByPath(treeData, path)?.locked ||
-                getNodeByPath(treeData, path)?.name === 'Aaji' ||
-                aajiAncestorCheck(path)
-              }
-              className="px-1 py-0.5 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
-            >
-              +
-            </button>
+            <div className="flex items-center gap-0.5">
+              <button
+                onClick={() => handleChange(path, round(node.value - 0.001))}
+                disabled={
+                  currentNode?.locked ||
+                  currentNode?.name === 'Aaji' ||
+                  aajiAncestorCheck(path)
+                }
+                className="px-1 py-0.5 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+              >
+                −
+              </button>
 
+              <div className="flex items-center gap-1">
+                <span className="w-[70px] text-center border px-1 py-0.5 rounded bg-white">
+                  {showActuals
+                    ? `${(node.value * totalAmount).toFixed(2)} Cr`
+                    : usePercentageOf66
+                    ? (node.value * 66.67).toFixed(2)
+                    : node.value.toFixed(3)}
+                </span>
+              </div>
+
+              <button
+                onClick={() => handleChange(path, round(node.value + 0.001))}
+                disabled={
+                  currentNode?.locked ||
+                  currentNode?.name === 'Aaji' ||
+                  aajiAncestorCheck(path)
+                }
+                className="px-1 py-0.5 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+              >
+                +
+              </button>
+            </div>
           </div>
+
+          {node.children && (
+            <div className="ml-4">
+              {node.children.map((child, i) => {
+                const currentPath = [...path, i];
+                const currentChild = child;
+                const nextChild = node.children[i + 1];
+
+                const shouldInsertTransition =
+                  nextChild &&
+                  ((currentChild.locked && !nextChild.locked) ||
+                   (!currentChild.locked && nextChild.locked));
+
+                return (
+                  <React.Fragment key={currentPath.join('-')}>
+                    {renderNode(child, currentPath, showActuals, totalAmount, usePercentageOf66)}
+                    {shouldInsertTransition && (
+                      <div className="flex justify-center my-1">
+                        <Zap className="text-yellow-400 animate-pulse w-6 h-6" />
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          )}
         </div>
-        {node.children && (
-          <div className="ml-4">
-            {node.children.map((child, i) => {
-              const currentPath = [...path, i];
-              const currentChild = child;
-              const nextChild = node.children[i + 1];
-
-              const shouldInsertTransition =
-                nextChild &&
-                ((currentChild.locked && !nextChild.locked) ||
-                 (!currentChild.locked && nextChild.locked));
-
-              return (
-                <React.Fragment key={currentPath.join('-')}>
-                  {renderNode(child, currentPath, showActuals, totalAmount, usePercentageOf66)}
-                  {shouldInsertTransition && (
-                    <div className="flex justify-center my-1">
-                      <Zap className="text-yellow-400 animate-pulse w-6 h-6" />
-                    </div>
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </div>
-        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div ref={contentRef} className="flex flex-col h-screen">
