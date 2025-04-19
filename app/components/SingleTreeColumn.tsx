@@ -8,17 +8,7 @@ import { cn } from "@/lib/utils"; // for combining classes
 // custom modules import
 import { initialTreeData } from '../data/initialTreeData';
 import ProsConsModal from './ProsConsModal';
-
-
-function decimalToFraction(value: number, maxDenominator = 1000, tolerance = 1e-6): string {
-  for (let denominator = 1; denominator <= maxDenominator; denominator++) {
-    const numerator = Math.round(value * denominator);
-    if (Math.abs(value - numerator / denominator) < tolerance) {
-      return `${numerator} ÷ ${denominator}`;
-    }
-  }
-  return value.toFixed(3); // Fallback to decimal representation
-}
+import Fraction from 'fraction.js';
 
 export interface TreeNode {
   name: string;
@@ -47,7 +37,6 @@ const SingleTreeColumn = () => {
   const [showPercentageAsHundred, setShowPercentageAsHundred] = useState(false);
   const [usePercentageOf66, setUsePercentageOf66] = useState(false);
   const getTopLevelIndex = (path: number[]) => path[0];
-
 
   const handleTogglePercentage = () => {
     setUsePercentageOf66(prev => !prev);
@@ -315,6 +304,13 @@ const SingleTreeColumn = () => {
   ) => {
     const currentNode = getNodeByPath(treeData, path);
 
+    // Function to format the unit fraction with two decimal places in the denominator
+    const formatUnitFraction = (denominator: number) => {
+      return `1/${(denominator).toFixed(2)}`;
+    };
+
+    const fractionString = formatUnitFraction(node.value); // Get the formatted unit fraction
+
     return (
       <div key={path.join('-')} className="p-1 border bg-white rounded shadow-sm text-sm">
         <div className="flex flex-col gap-1">
@@ -355,7 +351,7 @@ const SingleTreeColumn = () => {
                     ? `${(node.value * totalAmount).toFixed(2)} Cr`
                     : usePercentageOf66
                     ? (node.value * 66.67).toFixed(2)
-                    : decimalToFraction(node.value)}
+                    : fractionString} {/* Display formatted unit fraction */}
                 </span>
               </div>
 
@@ -401,6 +397,12 @@ const SingleTreeColumn = () => {
         </div>
       </div>
     );
+  };
+
+  const forceUnitFraction = (value: number) => {
+    if (value === 0) return '0';
+    const denominator = 1 / value;
+    return `1/${denominator.toFixed(2)}`;
   };
 
   return (
@@ -466,7 +468,10 @@ const SingleTreeColumn = () => {
                 showActuals ? 'opacity-0 invisible' : 'opacity-100 visible'
               }`}
             >
-              <span className="font-medium whitespace-nowrap">Percentage:</span>
+              <span className="font-medium whitespace-nowrap">
+                {usePercentageOf66 ? 'Percentage:' : 'Fraction:'}
+              </span>
+
               <div
                 onClick={handleTogglePercentage}
                 className={`relative w-20 h-6 flex items-center cursor-pointer rounded-full p-1 transition-colors duration-300 ${
@@ -509,7 +514,7 @@ const SingleTreeColumn = () => {
                       ? (node.value * totalAmount).toFixed(2)
                       : usePercentageOf66
                       ? (node.value * 66.67).toFixed(2)
-                      : decimalToFraction(node.value)}
+                      : forceUnitFraction(node.value)} {/* Display unit fraction */}
                   </span>
                   <button
                     onClick={() => handleChange([index], round(node.value + 0.001))}
@@ -558,7 +563,7 @@ const SingleTreeColumn = () => {
                       ? (node.value * totalAmount).toFixed(2)
                       : usePercentageOf66
                       ? (node.value * 66.67).toFixed(2)
-                      : decimalToFraction(node.value)}
+                      : forceUnitFraction(node.value)} {/* Display unit fraction */}
                   </span>
                   <button
                     onClick={() => handleChange([index], round(node.value + 0.001))}
