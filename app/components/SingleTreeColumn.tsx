@@ -9,6 +9,17 @@ import { cn } from "@/lib/utils"; // for combining classes
 import { initialTreeData } from '../data/initialTreeData';
 import ProsConsModal from './ProsConsModal';
 
+
+function decimalToFraction(value: number, maxDenominator = 1000, tolerance = 1e-6): string {
+  for (let denominator = 1; denominator <= maxDenominator; denominator++) {
+    const numerator = Math.round(value * denominator);
+    if (Math.abs(value - numerator / denominator) < tolerance) {
+      return `${numerator} ÷ ${denominator}`;
+    }
+  }
+  return value.toFixed(3); // Fallback to decimal representation
+}
+
 export interface TreeNode {
   name: string;
   value: number;
