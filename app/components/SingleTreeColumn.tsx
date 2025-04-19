@@ -355,7 +355,7 @@ const SingleTreeColumn = () => {
                     ? `${(node.value * totalAmount).toFixed(2)} Cr`
                     : usePercentageOf66
                     ? (node.value * 66.67).toFixed(2)
-                    : node.value.toFixed(3)}
+                    : decimalToFraction(node.value)}
                 </span>
               </div>
 
@@ -509,7 +509,7 @@ const SingleTreeColumn = () => {
                       ? (node.value * totalAmount).toFixed(2)
                       : usePercentageOf66
                       ? (node.value * 66.67).toFixed(2)
-                      : node.value.toFixed(3)}
+                      : decimalToFraction(node.value)}
                   </span>
                   <button
                     onClick={() => handleChange([index], round(node.value + 0.001))}
@@ -558,7 +558,7 @@ const SingleTreeColumn = () => {
                       ? (node.value * totalAmount).toFixed(2)
                       : usePercentageOf66
                       ? (node.value * 66.67).toFixed(2)
-                      : node.value.toFixed(3)}
+                      : decimalToFraction(node.value)}
                   </span>
                   <button
                     onClick={() => handleChange([index], round(node.value + 0.001))}
@@ -600,4 +600,4 @@ const SingleTreeColumn = () => {
   );
 };
 
-export default SingleTreeColumn;
+export default SingleTreeColumn;                  
