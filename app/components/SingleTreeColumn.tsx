@@ -296,27 +296,44 @@ const SingleTreeColumn = () => {
     const isTopLevelLocked = treeData[path[0]]?.locked;
 
     // Function to format unit fractions properly
-    const formatUnitFraction = (denominator: number | string) => {
-      let frac: Fraction;
-
-      // If it's a decimal (denominator is a number), convert to unit fraction
-      if (typeof denominator === 'number') {
-        frac = new Fraction(1).div(denominator);
-      } else {
-        // If it's already in a fraction form like '1/16', process normally
-        frac = new Fraction(denominator);
-      }
-
-      const simplifiedFraction = frac.toFraction(true); // Force full fraction (no simplification)
-      console.log('+++ simplified fraction:', simplifiedFraction); // Log the full fraction form
-
-      return `1/${simplifiedFraction}`; // Return the full simplified fraction in "1/xx" form
+    const formatUnitFraction = (decimal: number) => {
+      const frac = new Fraction(decimal);
+      return frac.toFraction(true); // returns something like "1/16" or "4/63"
     };
 
-    // Function to convert fraction back to decimal
     const formatToDecimal = (fraction: string) => {
-      const frac = new Fraction(fraction);  // Convert to fraction from "1/xx"
-      return frac.valueOf();  // Get decimal equivalent
+      console.log('Fraction input:', fraction);
+
+      // Handle cases where the fraction string contains a mixed fraction (e.g., "1 5/8")
+      if (fraction.includes(" ")) {
+        const parts = fraction.split(" ");  // Split at the space
+        const wholeNumber = parseInt(parts[0], 10);  // Whole part (before the space)
+        const fractionalPart = parts[1];  // Fractional part (after the space)
+
+        // Convert the fractional part to a decimal
+        const frac = new Fraction(fractionalPart);  // Convert "5/8" into a fraction
+        const improperFraction = frac.add(wholeNumber);  // Add the whole number part to the fraction
+        return improperFraction.valueOf();  // Convert to decimal
+      }
+
+      // Check if the fraction is in the correct "1/xx" form
+      if (fraction.includes("/")) {
+        try {
+          const frac = new Fraction(fraction);  // Create a Fraction object from the string
+          return frac.valueOf();  // Return decimal equivalent
+        } catch (error) {
+          console.error("Error creating Fraction from:", fraction, error);
+          return 0;  // Return 0 if error occurs while creating fraction
+        }
+      } else {
+        // If it's already a decimal (e.g., 0.0625), return it directly
+        const decimal = parseFloat(fraction);
+        if (isNaN(decimal)) {
+          console.error("Invalid decimal value:", fraction);
+          return 0;  // Return 0 if it's not a valid decimal
+        }
+        return decimal;
+      }
     };
 
     const isDecimalFraction = (value) => {
