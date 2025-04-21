@@ -429,8 +429,7 @@ const SingleTreeColumn = () => {
               {node.children.map((child, i) => {
                 const currentPath = [...path, i];
                 const currentChild = child;
-                if (!node.children) return null;
-                const nextChild = node.children[i + 1];
+                const nextChild = node.children?.[i + 1];
 
                 const shouldInsertTransition =
                   nextChild &&
