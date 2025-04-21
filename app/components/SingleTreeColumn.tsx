@@ -318,6 +318,11 @@ const SingleTreeColumn = () => {
       const frac = new Fraction(fraction);  // Convert to fraction from "1/xx"
       return frac.valueOf();  // Get decimal equivalent
     };
+
+    const isDecimalFraction = (value) => {
+      return value % 1 !== 0;  // This checks if the value has a decimal part
+    };
+
     const fractionString = formatUnitFraction(node.value); // Get the formatted unit fraction
 
     return (
@@ -372,7 +377,9 @@ const SingleTreeColumn = () => {
                     ? `${(node.value * totalAmount).toFixed(2)} Cr`
                     : usePercentageOf66
                     ? (node.value * 66.67).toFixed(2)
-                    : fractionString} {/* Display formatted unit fraction */}
+                    : isDecimalFraction(node.value)
+                    ? formatToDecimal(fractionString).toFixed(4)  // If it's a decimal, show the decimal
+                    : fractionString} {/* Display formatted unit fraction or decimal */}
                 </span>
               </div>
 
