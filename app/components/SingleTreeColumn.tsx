@@ -345,8 +345,8 @@ const SingleTreeColumn = () => {
       }
     };
 
-    const isDecimalFraction = (value) => {
-      return value % 1 !== 0;  // This checks if the value has a decimal part
+    const isDecimalFraction = (value: number): boolean => {
+      return value % 1 !== 0; // True if it's not a whole number
     };
 
     const fractionString = formatUnitFraction(node.value); // Get the formatted unit fraction
