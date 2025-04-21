@@ -1,9 +1,10 @@
 // system import
 import React, { useEffect, useState, useRef } from 'react';
 import { Lock, Unlock, Zap } from "lucide-react"; // Zap as bright icon
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { cn } from "@/lib/utils"; // for combining classes
+import html2pdf from 'html2pdf.js';
+
+// import ReactToPrint from 'react-to-print';
 
 // custom modules import
 import { initialTreeData } from '../data/initialTreeData';
@@ -37,6 +38,26 @@ const SingleTreeColumn = () => {
   const [showPercentageAsHundred, setShowPercentageAsHundred] = useState(false);
   const [usePercentageOf66, setUsePercentageOf66] = useState(false);
   const getTopLevelIndex = (path: number[]) => path[0];
+
+  const handleDownloadPDF = async () => {
+    const element = document.getElementById('printable-area');
+    if (!element) {
+      console.error('Printable area not found');
+      return;
+    }
+
+    const html2pdf = (await import('html2pdf.js')).default;
+
+    const opt = {
+      margin: 0.3,
+      filename: 'fair-distribution.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
+    };
+
+    html2pdf().set(opt).from(element).save();
+  };
 
   const handleTogglePercentage = () => {
     setUsePercentageOf66(prev => !prev);
@@ -92,34 +113,6 @@ const SingleTreeColumn = () => {
     setHistory((prev) => [...prev, snapshot]);
     setFuture([]); // clear future on new change
   };
-
-  const handleSaveAsPDF = async () => {
-    const element = document.getElementById('tree-container');
-    if (!element) return;
-
-    const filename = prompt('Enter filename for the PDF:', 'tree-data');
-    if (!filename) return; // user cancelled
-
-    const canvas = await html2canvas(element, {
-      scale: 3,
-      useCORS: true
-    });
-
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF({
-      orientation: 'landscape',
-      unit: 'px',
-      format: 'a4',
-    });
-
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const imgWidth = pageWidth;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-    pdf.save(`${filename}.pdf`);
-  };
-
 
   const handleUndo = () => {
     if (history.length === 0) return;
@@ -303,6 +296,7 @@ const SingleTreeColumn = () => {
     usePercentageOf66 = false
   ) => {
     const currentNode = getNodeByPath(treeData, path);
+    const isTopLevelLocked = treeData[path[0]]?.locked;
 
     // Function to format the unit fraction with two decimal places in the denominator
     const formatUnitFraction = (denominator: number) => {
@@ -317,19 +311,30 @@ const SingleTreeColumn = () => {
           <div className="flex items-center justify-between gap-1">
             <div className="flex items-center gap-1 min-w-0 sm:w-[100px]">
               {path.length > 0 && !aajiAncestorCheck(path) && currentNode && (
-                <button
-                  onClick={() => toggleLock(path)}
-                  className="ml-1"
-                  title={currentNode.locked ? 'Unlock' : 'Lock'}
-                >
-                  <img
-                    src={currentNode.locked ? "/icons/lock-red.png" : "/icons/unlock-green.png"}
-                    alt={currentNode.locked ? "Locked" : "Unlocked"}
-                    className="w-5 h-5 transition-transform duration-300 hover:scale-110 shrink-0"
-                  />
-                </button>
+                <div className="ml-1">
+                  {isTopLevelLocked && !currentNode.locked ? (
+                    <img
+                      src="/icons/lock-red.png"
+                      alt="Locked (inherited)"
+                      className="w-5 h-5 opacity-60"
+                      title="Locked by parent"
+                    />
+                  ) : (
+                    <button
+                      onClick={() => toggleLock(path)}
+                      className="ml-1"
+                      title={currentNode.locked ? 'Unlock' : 'Lock'}
+                    >
+                      <img
+                        src={currentNode.locked ? "/icons/lock-red.png" : "/icons/unlock-green.png"}
+                        alt={currentNode.locked ? "Locked" : "Unlocked"}
+                        className="w-5 h-5 transition-transform duration-300 hover:scale-110 shrink-0"
+                      />
+                    </button>
+                  )}
+                </div>
               )}
-              <span className="truncate">{node.name}</span>
+              <span className="whitespace-nowrap">{node.name}</span>
             </div>
 
             <div className="flex items-center gap-0.5">
@@ -337,6 +342,7 @@ const SingleTreeColumn = () => {
                 onClick={() => handleChange(path, round(node.value - 0.001))}
                 disabled={
                   currentNode?.locked ||
+                  isTopLevelLocked ||
                   currentNode?.name === 'Aaji' ||
                   aajiAncestorCheck(path)
                 }
@@ -359,6 +365,7 @@ const SingleTreeColumn = () => {
                 onClick={() => handleChange(path, round(node.value + 0.001))}
                 disabled={
                   currentNode?.locked ||
+                  isTopLevelLocked ||
                   currentNode?.name === 'Aaji' ||
                   aajiAncestorCheck(path)
                 }
@@ -404,10 +411,9 @@ const SingleTreeColumn = () => {
     const denominator = 1 / value;
     return `1/${denominator.toFixed(2)}`;
   };
-
+  const printRef = useRef<HTMLDivElement>(null);
   return (
-    <div ref={contentRef} className="flex flex-col h-screen">
-
+    <div id="printable-area" className="p-4 text-sm bg-white">
       {/* Sticky Header */}
       <div className="bg-white shadow-md p-4 sticky top-0 z-10" style={{ minHeight: '150px' }}>
         <div className="grid grid-cols-1 gap-2">
@@ -430,7 +436,10 @@ const SingleTreeColumn = () => {
             <button onClick={handleReset} className="p-1 bg-red-200 text-red-800 rounded hover:bg-red-300" title="Reset">
               ⟳
             </button>
-            <button onClick={handleSaveAsPDF} className="p-1 px-2 bg-blue-200 text-blue-800 text-sm rounded hover:bg-blue-300">
+            <button
+              onClick={handleDownloadPDF}
+              className="p-1 px-2 bg-blue-200 text-blue-800 text-sm rounded hover:bg-blue-300"
+            >
               PDF
             </button>
           </div>
@@ -495,61 +504,82 @@ const SingleTreeColumn = () => {
       {/* Responsive Tree Structure */}
       <div className="w-full">
         {/* Desktop: Separate Grids */}
-        <div className="hidden sm:grid grid-cols-8 gap-2">
-          {treeData.map((node, index) => (
-            <div key={index} className="p-2 bg-gray-100 rounded shadow text-center">
-              {/* Top-level content same as before */}
-              <div className="flex items-center justify-between border border-gray-300 rounded px-2 py-1 bg-white shadow-sm w-full">
-                <span className="font-medium truncate">{node.name}</span>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => handleChange([index], round(node.value - 0.001))}
-                    disabled={node.name === 'Aaji' || node.locked}
-                    className="text-sm px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
-                  >
-                    −
-                  </button>
-                  <span className="w-16 text-center border px-2 py-1 rounded bg-white">
-                    {showActuals
-                      ? (node.value * totalAmount).toFixed(2)
-                      : usePercentageOf66
-                      ? (node.value * 66.67).toFixed(2)
-                      : forceUnitFraction(node.value)} {/* Display unit fraction */}
-                  </span>
-                  <button
-                    onClick={() => handleChange([index], round(node.value + 0.001))}
-                    disabled={node.name === 'Aaji' || node.locked}
-                    className="text-sm px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
-                  >
-                    +
-                  </button>
-                  {(node.name === 'Aaji' || node.locked) && (
-                    <Lock size={14} className="text-gray-500 ml-2" />
-                  )}
+        <div className="hidden sm:grid grid-cols-7 gap-2">
+          {treeData
+              .filter((node) => node.name !== 'Aaji')
+              .map((node, index) => {
+            return (
+              <div key={index} className="p-2 bg-gray-100 rounded shadow text-center">
+                <div className="flex items-center justify-between border border-gray-300 rounded px-2 py-1 bg-white shadow-sm w-full">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium whitespace-nowrap">{node.name}</span>
+
+                    {/* Lock/Unlock icon for top-level */}
+                    <button
+                      onClick={() => toggleLock([index])}
+                      className="p-1 rounded hover:bg-gray-200"
+                      title={node.locked ? 'Unlock' : 'Lock'}
+                    >
+                      <img
+                        src={node.locked ? "/icons/lock-red.png" : "/icons/unlock-green.png"}
+                        alt={node.locked ? "Locked" : "Unlocked"}
+                        className="w-5 h-5 transition-transform duration-300 hover:scale-110"
+                      />
+                    </button>
+                  </div>
+
+                  {/* Value controls */}
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleChange([index], round(node.value - 0.001))}
+                      disabled={node.locked}
+                      className="text-sm px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
+                    >
+                      −
+                    </button>
+                    <span className="w-16 text-center border px-2 py-1 rounded bg-white">
+                      {showActuals
+                        ? (node.value * totalAmount).toFixed(2)
+                        : usePercentageOf66
+                        ? (node.value * 66.67).toFixed(2)
+                        : forceUnitFraction(node.value)}
+                    </span>
+                    <button
+                      onClick={() => handleChange([index], round(node.value + 0.001))}
+                      disabled={node.locked}
+                      className="text-sm px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Desktop: Child Grid */}
-        <div className="hidden sm:grid grid-cols-8 gap-2 mt-2">
-          {treeData.map((node, topLevelIndex) => (
-            <div key={topLevelIndex} className="px-1">
-              {node.children?.map((child, childIndex) =>
-                renderNode(child, [topLevelIndex, childIndex], showActuals, totalAmount, usePercentageOf66)
-              )}
-            </div>
+        <div className="hidden sm:grid grid-cols-7 gap-2 mt-2">
+          {treeData
+            .filter((node) => node.name !== 'Aaji')
+            .map((node, topLevelIndex) => (
+              <div key={topLevelIndex} className="px-1">
+                {node.children?.map((child, childIndex) =>
+                  renderNode(child, [topLevelIndex, childIndex], showActuals, totalAmount, usePercentageOf66)
+                )}
+              </div>
           ))}
         </div>
 
         {/* Mobile: Top-level and children stacked */}
         <div className="sm:hidden flex flex-col gap-4 mt-4">
-          {treeData.map((node, index) => (
+          {treeData
+              .filter((node) => node.name !== 'Aaji')
+              .map((node, index) => (
             <div key={index} className="bg-gray-100 rounded shadow p-2">
               {/* Top-level */}
               <div className="flex items-center justify-between border border-gray-300 rounded px-2 py-1 bg-white shadow-sm w-full mb-2">
-                <span className="font-medium truncate">{node.name}</span>
+                <span className="font-medium whitespace-nowrap">{node.name}</span>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => handleChange([index], round(node.value - 0.001))}
@@ -588,21 +618,8 @@ const SingleTreeColumn = () => {
           ))}
         </div>
       </div>
-
-      {/* Scrollable Grid */}
-      <div id="tree-container" className="flex-1 overflow-auto p-4">
-        <div className="grid grid-cols-8 gap-2">
-          {treeData.map((node, topLevelIndex) => (
-            <div key={topLevelIndex} className="px-1">
-              {node.children?.map((child, childIndex) =>
-                renderNode(child, [topLevelIndex, childIndex], showActuals, totalAmount, usePercentageOf66)
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 };
 
-export default SingleTreeColumn;                  
+export default SingleTreeColumn;

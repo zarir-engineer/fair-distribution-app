@@ -20,41 +20,23 @@ body {
 }
 
 @media print {
-  html, body {
-    height: auto;
-    overflow: visible !important;
-    background-color: white;
+  body {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
-  @page {
-    size: A4;
-    margin: 1cm;
+  #tree-container {
+    margin: 0;
+    padding: 0;
+    box-shadow: none !important;
+    background: white !important;
+  }
+
+  button, .no-print {
+    display: none !important;
   }
 
   .no-print {
     display: none !important;
-  }
-
-  .print-container,
-  .container,
-  .max-w-screen-lg,
-  .max-w-screen-md {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  .print-container * {
-    max-height: none !important;
-    overflow: visible !important;
-  }
-
-  .sticky, .fixed {
-    position: static !important;
-  }
-
-  .page-break {
-    page-break-before: always;
   }
 }
