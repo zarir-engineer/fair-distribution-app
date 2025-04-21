@@ -247,7 +247,10 @@ const SingleTreeColumn = () => {
       target.locked = !target.locked;
 
       if (!target.locked && target.children) {
-        target.children.forEach(child => (child.locked = false));
+        target.children.forEach((child: TreeNode) => {
+          child.locked = false;
+        });
+
       }
 
       return deepCopy;
