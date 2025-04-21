@@ -161,7 +161,13 @@ const SingleTreeColumn = () => {
     const [topLevelIdx, ...childPath] = path;
     const topLevelNode = treeCopy[topLevelIdx];
     const parentNode = getNodeByPath(topLevelNode, childPath.slice(0, -1));
-    const siblings = parentNode.children!;
+    if (!parentNode || !parentNode.children) {
+      console.error('Parent node or its children not found');
+      return;
+    }
+
+    const siblings = parentNode.children;
+
     const editedNode = getNodeByPath(topLevelNode, childPath);
 
     // 🔐 Rule 2: Check BEFORE value is changed
