@@ -1,10 +1,7 @@
 // system import
 import React, { useEffect, useState, useRef } from 'react';
 import { Lock, Unlock, Zap } from "lucide-react"; // Zap as bright icon
-import { cn } from "@/lib/utils"; // for combining classes
 import html2pdf from 'html2pdf.js';
-
-// import ReactToPrint from 'react-to-print';
 
 // custom modules import
 import { initialTreeData } from '../data/initialTreeData';
@@ -49,7 +46,7 @@ const SingleTreeColumn = () => {
     const html2pdf = (await import('html2pdf.js')).default;
 
     const opt = {
-      margin: 0.3,
+      margin: [0.05, 0.2, 0.05, 0.2], // [left, top, right, bottom]
       filename: 'fair-distribution.pdf',
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2 },
@@ -298,11 +295,29 @@ const SingleTreeColumn = () => {
     const currentNode = getNodeByPath(treeData, path);
     const isTopLevelLocked = treeData[path[0]]?.locked;
 
-    // Function to format the unit fraction with two decimal places in the denominator
-    const formatUnitFraction = (denominator: number) => {
-      return `1/${(denominator).toFixed(2)}`;
+    // Function to format unit fractions properly
+    const formatUnitFraction = (denominator: number | string) => {
+      let frac: Fraction;
+
+      // If it's a decimal (denominator is a number), convert to unit fraction
+      if (typeof denominator === 'number') {
+        frac = new Fraction(1).div(denominator);
+      } else {
+        // If it's already in a fraction form like '1/16', process normally
+        frac = new Fraction(denominator);
+      }
+
+      const simplifiedFraction = frac.toFraction(true); // Force full fraction (no simplification)
+      console.log('+++ simplified fraction:', simplifiedFraction); // Log the full fraction form
+
+      return `1/${simplifiedFraction}`; // Return the full simplified fraction in "1/xx" form
     };
 
+    // Function to convert fraction back to decimal
+    const formatToDecimal = (fraction: string) => {
+      const frac = new Fraction(fraction);  // Convert to fraction from "1/xx"
+      return frac.valueOf();  // Get decimal equivalent
+    };
     const fractionString = formatUnitFraction(node.value); // Get the formatted unit fraction
 
     return (
