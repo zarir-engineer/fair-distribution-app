@@ -533,7 +533,7 @@ const SingleTreeColumn = () => {
   return (
     <div id="printable-area" className="p-4 text-sm ">
       {/* Sticky Header */}
-      <div className=" shadow-md p-4 sticky top-0 z-10" style={{ minHeight: '150px' }}>
+      <div className="bg-white shadow-md p-4 sticky top-0 z-10" style={{ minHeight: '150px' }}>
         <div className="grid grid-cols-1 gap-2">
 
           {/* First Row: Title */}
@@ -619,7 +619,7 @@ const SingleTreeColumn = () => {
                 }`}
               >
                 <div
-                  className={` w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
+                  className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
                     usePercentageOf66 ? 'translate-x-[2.7rem]' : 'translate-x-0'
                   }`}
                 />
@@ -636,7 +636,7 @@ const SingleTreeColumn = () => {
               .filter((node) => node.name !== 'Aaji')
               .map((node, index) => {
             return (
-              <div key={index} className="p-2 bg-gray-100 rounded shadow bg-white text-center">
+              <div key={index} className="p-2 bg-gray-100 bg-white rounded shadow text-center">
                 <div className="flex items-center justify-between border border-gray-300 rounded px-2 py-1  shadow-sm">
                   <div className="flex items-center gap-2">
                     <span className="font-medium whitespace-nowrap">{node.name}</span>
@@ -664,7 +664,7 @@ const SingleTreeColumn = () => {
                     >
                       −
                     </button>
-                    <span className="w-16 text-center border px-2 py-1 rounded ">
+                    <span className="w-16 text-center border px-2 py-1 rounded bg-white">
                       {showActuals
                         ? getCrValue(node.value, totalAmount, brokeragePercent).toFixed(2)
                         : usePercentageOf66
@@ -720,7 +720,7 @@ const SingleTreeColumn = () => {
                   >
                     −
                   </button>
-                  <span className="w-16 text-center border px-2 py-1 rounded ">
+                  <span className="w-16 text-center border px-2 py-1 rounded bg-white">
                     {showActuals
                       ? (getCrValue(node.value, totalAmount, brokeragePercent)).toFixed(2)
                       : usePercentageOf66
