@@ -545,18 +545,18 @@ const SingleTreeColumn = () => {
 
           {/* First Row: Centered Buttons */}
           <div className="flex justify-center w-full flex-wrap gap-1">
-            <button onClick={handleUndo} className="p-1 bg-gray-300 rounded hover:bg-gray-100" title="Undo">
+            <button onClick={handleUndo} className="p-1 bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200" title="Undo">
               ↶
             </button>
-            <button onClick={handleRedo} className="p-1 bg-gray-100 rounded hover:bg-gray-300" title="Redo">
+            <button onClick={handleRedo} className="p-1 bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200" title="Redo">
               ↷
             </button>
-            <button onClick={handleReset} className="p-1 bg-red-200 text-red-800 rounded hover:bg-red-300" title="Reset">
+            <button onClick={handleReset} className="p-1 bg-red-100 text-red-800 rounded hover:bg-red-200" title="Reset">
               ⟳
             </button>
             <button
               onClick={handleDownloadPDF}
-              className="p-1 px-2 bg-blue-200 text-blue-800 text-sm rounded hover:bg-blue-300"
+              className="p-1 px-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
             >
               PDF
             </button>
