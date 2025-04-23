@@ -424,7 +424,7 @@ const SingleTreeColumn = () => {
 
     const adjustedAmount = totalAmount - (totalAmount * brokeragePercent / 100);
     return (
-      <div key={path.join('-')} className="p-1 border bg-white rounded shadow-sm text-sm">
+      <div key={path.join('-')} className="p-1 border  rounded shadow-sm text-sm">
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between gap-1">
             <div className="flex items-center gap-1 min-w-0 sm:w-[100px]">
@@ -470,7 +470,7 @@ const SingleTreeColumn = () => {
               </button>
 
               <div className="flex items-center gap-1">
-                <span className="w-[70px] text-center border px-1 py-0.5 rounded bg-white">
+                <span className="w-[70px] text-center border px-1 py-0.5 rounded ">
                   {showActuals
                     ? `${getCrValue(node.value, totalAmount, brokeragePercent).toFixed(2)} Cr`
                     : usePercentageOf66
@@ -531,20 +531,20 @@ const SingleTreeColumn = () => {
   };
   const printRef = useRef<HTMLDivElement>(null);
   return (
-    <div id="printable-area" className="p-4 text-sm bg-white">
+    <div id="printable-area" className="p-4 text-sm ">
       {/* Sticky Header */}
-      <div className="bg-white shadow-md p-4 sticky top-0 z-10" style={{ minHeight: '150px' }}>
+      <div className=" shadow-md p-4 sticky top-0 z-10" style={{ minHeight: '150px' }}>
         <div className="grid grid-cols-1 gap-2">
 
           {/* First Row: Title */}
           <div className="flex flex-wrap items-center justify-center sm:justify-center gap-2">
-            <h1 className="text-lg font-semibold w-full text-left sm:text-left sm:w-auto">
+            <h1 className="text-lg font-semibold text-left sm:text-left sm:w-auto">
               Distribute Fairly App
             </h1>
           </div>
 
           {/* First Row: Centered Buttons */}
-          <div className="flex justify-center w-full flex-wrap gap-1">
+          <div className="flex justify-center flex-wrap gap-1">
             <button onClick={handleUndo} className="p-1 bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200" title="Undo">
               ↶
             </button>
@@ -619,7 +619,7 @@ const SingleTreeColumn = () => {
                 }`}
               >
                 <div
-                  className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
+                  className={` w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
                     usePercentageOf66 ? 'translate-x-[2.7rem]' : 'translate-x-0'
                   }`}
                 />
@@ -630,18 +630,14 @@ const SingleTreeColumn = () => {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Responsive Tree Structure */}
-      <div className="w-full">
         {/* Desktop: Separate Grids */}
         <div className="hidden sm:grid grid-cols-7 gap-2">
           {adjustedTreeData
               .filter((node) => node.name !== 'Aaji')
               .map((node, index) => {
             return (
-              <div key={index} className="p-2 bg-gray-100 rounded shadow text-center">
-                <div className="flex items-center justify-between border border-gray-300 rounded px-2 py-1 bg-white shadow-sm w-full">
+              <div key={index} className="p-2 bg-gray-100 rounded shadow bg-white text-center">
+                <div className="flex items-center justify-between border border-gray-300 rounded px-2 py-1  shadow-sm">
                   <div className="flex items-center gap-2">
                     <span className="font-medium whitespace-nowrap">{node.name}</span>
 
@@ -668,7 +664,7 @@ const SingleTreeColumn = () => {
                     >
                       −
                     </button>
-                    <span className="w-16 text-center border px-2 py-1 rounded bg-white">
+                    <span className="w-16 text-center border px-2 py-1 rounded ">
                       {showActuals
                         ? getCrValue(node.value, totalAmount, brokeragePercent).toFixed(2)
                         : usePercentageOf66
@@ -689,6 +685,11 @@ const SingleTreeColumn = () => {
           })}
         </div>
 
+      </div>
+
+      {/* Responsive Tree Structure */}
+      <div className="w-full">
+
         {/* Desktop: Child Grid */}
         <div className="hidden sm:grid grid-cols-7 gap-2 mt-2">
           {adjustedTreeData
@@ -707,9 +708,9 @@ const SingleTreeColumn = () => {
           {adjustedTreeData
               .filter((node) => node.name !== 'Aaji')
               .map((node, index) => (
-            <div key={index} className="bg-white text-black sm:bg-gray-50 sm:text-gray-800 rounded shadow p-2">
+            <div key={index} className=" text-black sm:bg-gray-50 sm:text-gray-800 rounded shadow p-2">
               {/* Top-level */}
-              <div className="flex items-center justify-between border border-gray-300 rounded px-2 py-1 bg-white shadow-sm w-full mb-2">
+              <div className="flex items-center justify-between border border-gray-300 rounded px-2 py-1  shadow-sm mb-2">
                 <span className="font-medium whitespace-nowrap">{node.name}</span>
                 <div className="flex items-center gap-1">
                   <button
@@ -719,7 +720,7 @@ const SingleTreeColumn = () => {
                   >
                     −
                   </button>
-                  <span className="w-16 text-center border px-2 py-1 rounded bg-white">
+                  <span className="w-16 text-center border px-2 py-1 rounded ">
                     {showActuals
                       ? (getCrValue(node.value, totalAmount, brokeragePercent)).toFixed(2)
                       : usePercentageOf66
