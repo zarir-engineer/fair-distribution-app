@@ -1,7 +1,6 @@
 // system import
 import React, { useEffect, useState, useRef } from 'react';
 import { Lock, Unlock, Zap } from "lucide-react"; // Zap as bright icon
-import html2pdf from 'html2pdf.js';
 
 // custom modules import
 import { initialTreeData } from '../data/initialTreeData';
@@ -15,6 +14,40 @@ export interface TreeNode {
   children?: TreeNode[];
 }
 
+const getEffectiveFraction = (nodeFraction: number, total: number, brokeragePercent: number): string => {
+  const adjusted = total - (total * brokeragePercent / 100);
+  const effective = (nodeFraction * total) / adjusted;
+  return formatAsFraction(effective);
+};
+
+
+const getCrValue = (fraction: number, total: number, brokeragePercent: number): number => {
+  const adjustedTotal = total - (total * brokeragePercent / 100);
+  return fraction * adjustedTotal;
+};
+
+const formatAsFraction = (decimal: number): string => {
+  if (decimal === 0) return '0';
+  return new Fraction(decimal).toFraction(true); // e.g., "1/8"
+};
+
+const formatAsUnitFraction = (value: number): string => {
+  if (value === 0) return '0';
+  const unit = 1 / value;
+  return `1/${unit.toFixed(2)}`; // always shows as 1/x.xx
+};
+
+
+const getEffectiveFractionString = (
+  nodeFraction: number,
+  total: number,
+  brokeragePercent: number
+): string => {
+  const adjusted = total - (total * brokeragePercent / 100);
+  const effectiveDecimal = (nodeFraction * total) / adjusted;
+  return formatAsFraction(effectiveDecimal); // e.g., "1/7.84"
+};
+
 const round = (num: number) => parseFloat(num.toFixed(3));
 const getPath = (path: number[]) => path.join('-');
 
@@ -25,7 +58,7 @@ const BrightTransition = () => (
 );
 
 const SingleTreeColumn = () => {
-  const [treeData, setTreeData] = useState<TreeNode[]>(initialTreeData);
+  const [adjustedTreeData, setAdjustedTreeData] = useState<TreeNode[]>(initialTreeData);
   const [editingPath, setEditingPath] = useState<string>('');
   const [history, setHistory] = useState<TreeNode[][]>([]);
   const [future, setFuture] = useState<TreeNode[][]>([]);
@@ -35,6 +68,42 @@ const SingleTreeColumn = () => {
   const [showPercentageAsHundred, setShowPercentageAsHundred] = useState(false);
   const [usePercentageOf66, setUsePercentageOf66] = useState(false);
   const getTopLevelIndex = (path: number[]) => path[0];
+
+  const [brokeragePercent, setBrokeragePercent] = useState(0);
+
+  // Function to distribute shares with brokerage
+  const distributeWithBrokerage = (totalCr: number, brokeragePercent: number) => {
+    const brokerageValue = (brokeragePercent / 100) * totalCr;
+    const remainingTotal = totalCr - brokerageValue;
+
+    return {
+      brokerageValue,
+      remainingTotal,
+      updatedTreeData: initialTreeData.map(node => ({ ...node })) // don't modify values!
+    };
+  };
+
+  const adjustChildren = (
+      children: TreeNode[] | undefined,
+      oldParentFraction: number,
+      newParentFraction: number
+      ): TreeNode[] | undefined => {
+    if (!children) return children;
+
+    const ratio = newParentFraction / oldParentFraction;
+
+    return children.map(child => ({
+      ...child,
+      value: child.value * ratio,
+      children: adjustChildren(child.children, child.value, child.value * ratio)
+    }));
+  }
+
+  useEffect(() => {
+    const { updatedTreeData } = distributeWithBrokerage(totalAmount, brokeragePercent);
+    setAdjustedTreeData(updatedTreeData);
+  }, [totalAmount, brokeragePercent]);
+
 
   const handleDownloadPDF = async () => {
     const element = document.getElementById('printable-area');
@@ -115,25 +184,25 @@ const SingleTreeColumn = () => {
     if (history.length === 0) return;
     const previous = history[history.length - 1];
     setHistory((h) => h.slice(0, -1));
-    setFuture((f) => [treeData, ...f]);
-    setTreeData(previous);
+    setFuture((f) => [adjustedTreeData, ...f]);
+    setAdjustedTreeData(previous);
   };
 
   const handleRedo = () => {
     if (future.length === 0) return;
     const next = future[0];
     setFuture((f) => f.slice(1));
-    setHistory((h) => [...h, treeData]);
-    setTreeData(next);
+    setHistory((h) => [...h, adjustedTreeData]);
+    setAdjustedTreeData(next);
   };
 
   const handleReset = () => {
-    pushToHistory(treeData);
-    setTreeData(initialTreeData);
+    pushToHistory(adjustedTreeData);
+    setAdjustedTreeData(initialTreeData);
   };
 
   const aajiAncestorCheck = (path: number[]) => {
-    let node = treeData[path[0]];
+    let node = adjustedTreeData[path[0]];
     for (let i = 1; i < path.length; i++) {
       if (node.name === 'Aaji') return true;
       node = node.children?.[path[i]] ?? { name: '', value: 0 };
@@ -235,7 +304,7 @@ const SingleTreeColumn = () => {
   };
 
   const toggleLock = (path: number[]) => {
-    setTreeData(prevTree => {
+    setAdjustedTreeData(prevTree => {
       const deepCopy = JSON.parse(JSON.stringify(prevTree)); // ensures state triggers re-render
       let node = deepCopy;
 
@@ -259,7 +328,7 @@ const SingleTreeColumn = () => {
 
   const handleChange = (path: number[], newValue: number) => {
     const currentPath = getPath(path);
-    setTreeData((prev) => {
+    setAdjustedTreeData((prev) => {
       const treeCopy = JSON.parse(JSON.stringify(prev));
 
       // ⏪ Save to history before change
@@ -299,10 +368,11 @@ const SingleTreeColumn = () => {
     path: number[] = [],
     showActuals = false,
     totalAmount = 0,
-    usePercentageOf66 = false
+    usePercentageOf66 = false,
+    brokeragePercent = 0
   ) => {
-    const currentNode = getNodeByPath(treeData, path);
-    const isTopLevelLocked = treeData[path[0]]?.locked;
+    const currentNode = getNodeByPath(adjustedTreeData, path);
+    const isTopLevelLocked = adjustedTreeData[path[0]]?.locked;
 
     // Function to format unit fractions properly
     const formatUnitFraction = (decimal: number) => {
@@ -349,8 +419,10 @@ const SingleTreeColumn = () => {
       return value % 1 !== 0; // True if it's not a whole number
     };
 
-    const fractionString = formatUnitFraction(node.value); // Get the formatted unit fraction
+    const effectiveDecimal = (node.value * totalAmount) / (totalAmount - (totalAmount * brokeragePercent / 100));
+    const fractionString = formatAsUnitFraction(effectiveDecimal);
 
+    const adjustedAmount = totalAmount - (totalAmount * brokeragePercent / 100);
     return (
       <div key={path.join('-')} className="p-1 border bg-white rounded shadow-sm text-sm">
         <div className="flex flex-col gap-1">
@@ -400,12 +472,10 @@ const SingleTreeColumn = () => {
               <div className="flex items-center gap-1">
                 <span className="w-[70px] text-center border px-1 py-0.5 rounded bg-white">
                   {showActuals
-                    ? `${(node.value * totalAmount).toFixed(2)} Cr`
+                    ? `${getCrValue(node.value, totalAmount, brokeragePercent).toFixed(2)} Cr`
                     : usePercentageOf66
-                    ? (node.value * 66.67).toFixed(2)
-                    : isDecimalFraction(node.value)
-                    ? formatToDecimal(fractionString).toFixed(4)  // If it's a decimal, show the decimal
-                    : fractionString} {/* Display formatted unit fraction or decimal */}
+                      ? (node.value * 66.67).toFixed(2)
+                      : fractionString}
                 </span>
               </div>
 
@@ -438,7 +508,7 @@ const SingleTreeColumn = () => {
 
                 return (
                   <React.Fragment key={currentPath.join('-')}>
-                    {renderNode(child, currentPath, showActuals, totalAmount, usePercentageOf66)}
+                    {renderNode(child, currentPath, showActuals, totalAmount, usePercentageOf66, brokeragePercent)}
                     {shouldInsertTransition && (
                       <div className="flex justify-center my-1">
                         <Zap className="text-yellow-400 animate-pulse w-6 h-6" />
@@ -508,6 +578,19 @@ const SingleTreeColumn = () => {
               />
             </div>
 
+            {/* Brokerage (%) */}
+            <div className="flex items-center gap-1 min-w-[120px] justify-center">
+              <span className="text-sm font-medium">Brokerage (%):</span>
+              <input
+                type="number"
+                min={0}
+                step={0.1}
+                value={isNaN(brokeragePercent) ? '' : brokeragePercent}
+                onChange={(e) => setBrokeragePercent(parseFloat(e.target.value) || 0)}
+                className="w-[50px] px-1 py-0.5 border rounded text-sm"
+              />
+            </div>
+
             {/* Actuals Toggle */}
             <div className="flex items-center justify-center min-w-[90px]">
               <button
@@ -553,7 +636,7 @@ const SingleTreeColumn = () => {
       <div className="w-full">
         {/* Desktop: Separate Grids */}
         <div className="hidden sm:grid grid-cols-7 gap-2">
-          {treeData
+          {adjustedTreeData
               .filter((node) => node.name !== 'Aaji')
               .map((node, index) => {
             return (
@@ -587,10 +670,10 @@ const SingleTreeColumn = () => {
                     </button>
                     <span className="w-16 text-center border px-2 py-1 rounded bg-white">
                       {showActuals
-                        ? (node.value * totalAmount).toFixed(2)
+                        ? getCrValue(node.value, totalAmount, brokeragePercent).toFixed(2)
                         : usePercentageOf66
-                        ? (node.value * 66.67).toFixed(2)
-                        : forceUnitFraction(node.value)}
+                          ? (node.value * 66.67).toFixed(2)
+                          : formatAsUnitFraction((node.value * totalAmount) / (totalAmount - (totalAmount * brokeragePercent / 100)))}
                     </span>
                     <button
                       onClick={() => handleChange([index], round(node.value + 0.001))}
@@ -608,12 +691,12 @@ const SingleTreeColumn = () => {
 
         {/* Desktop: Child Grid */}
         <div className="hidden sm:grid grid-cols-7 gap-2 mt-2">
-          {treeData
+          {adjustedTreeData
             .filter((node) => node.name !== 'Aaji')
             .map((node, topLevelIndex) => (
               <div key={topLevelIndex} className="px-1">
                 {node.children?.map((child, childIndex) =>
-                  renderNode(child, [topLevelIndex, childIndex], showActuals, totalAmount, usePercentageOf66)
+                  renderNode(child, [topLevelIndex, childIndex], showActuals, totalAmount, usePercentageOf66, brokeragePercent)
                 )}
               </div>
           ))}
@@ -621,7 +704,7 @@ const SingleTreeColumn = () => {
 
         {/* Mobile: Top-level and children stacked */}
         <div className="sm:hidden flex flex-col gap-4 mt-4">
-          {treeData
+          {adjustedTreeData
               .filter((node) => node.name !== 'Aaji')
               .map((node, index) => (
             <div key={index} className="bg-gray-100 rounded shadow p-2">
@@ -638,10 +721,10 @@ const SingleTreeColumn = () => {
                   </button>
                   <span className="w-16 text-center border px-2 py-1 rounded bg-white">
                     {showActuals
-                      ? (node.value * totalAmount).toFixed(2)
+                      ? (getCrValue(node.value, totalAmount, brokeragePercent)).toFixed(2)
                       : usePercentageOf66
                       ? (node.value * 66.67).toFixed(2)
-                      : forceUnitFraction(node.value)} {/* Display unit fraction */}
+                      : formatAsUnitFraction((node.value * totalAmount) / (totalAmount - (totalAmount * brokeragePercent / 100)))}
                   </span>
                   <button
                     onClick={() => handleChange([index], round(node.value + 0.001))}
@@ -659,7 +742,7 @@ const SingleTreeColumn = () => {
               {/* Children */}
               <div className="flex flex-col gap-2">
                 {node.children?.map((child, childIndex) =>
-                  renderNode(child, [index, childIndex], showActuals, totalAmount, usePercentageOf66)
+                  renderNode(child, [index, childIndex], showActuals, totalAmount, usePercentageOf66, brokeragePercent)
                 )}
               </div>
             </div>
