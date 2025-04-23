@@ -707,7 +707,7 @@ const SingleTreeColumn = () => {
           {adjustedTreeData
               .filter((node) => node.name !== 'Aaji')
               .map((node, index) => (
-            <div key={index} className="bg-gray-100 rounded shadow p-2">
+            <div key={index} className="bg-white text-black sm:bg-gray-50 sm:text-gray-800 rounded shadow p-2">
               {/* Top-level */}
               <div className="flex items-center justify-between border border-gray-300 rounded px-2 py-1 bg-white shadow-sm w-full mb-2">
                 <span className="font-medium whitespace-nowrap">{node.name}</span>
