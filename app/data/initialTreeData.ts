@@ -14,17 +14,6 @@ export const initialTreeData: TreeNode[] = [
     ],
   },
   {
-    id: "shripal",
-    name: "Shripal",
-    value: 0.125,
-    isTopLevel: true,
-    children: [
-      { id: "shripal-kiran", name: "Kiran", value: 0.041666667, children: [] },
-      { id: "shripal-charu", name: "Charu", value: 0.041666667, children: [] },
-      { id: "shripal-ajay", name: "Ajay", value: 0.041666667, children: [] },
-    ],
-  },
-  {
     id: "ishwar",
     name: "Ishwar",
     value: 0.125,

@@ -192,7 +192,7 @@ const SingleTreeColumn = () => {
     if (future.length === 0) return;
     const next = future[0];
     setFuture((f) => f.slice(1));
-    setHistory((h) => [...h, adjustedTreeData]);
+    setsHistory((h) => [...h, adjustedTreeData]);
     setAdjustedTreeData(next);
   };
 
@@ -637,7 +637,8 @@ const SingleTreeColumn = () => {
         {/* Desktop: Separate Grids */}
         <div className="hidden sm:grid grid-cols-7 gap-2">
           {adjustedTreeData
-              .filter((node) => node.name !== 'Aaji')
+              .filter((node) => node.name !== 'Shripal')
+	      .filter((node) => node.name !== 'Aaji')
               .map((node, index) => {
             return (
               <div key={index} className="p-2 bg-gray-100 bg-white rounded shadow text-center break-words">
@@ -697,7 +698,8 @@ const SingleTreeColumn = () => {
         {/* Desktop: Child Grid */}
         <div className="hidden sm:grid grid-cols-7 gap-2 mt-2">
           {adjustedTreeData
-            .filter((node) => node.name !== 'Aaji')
+            .filter((node) => node.name !== 'Shripal')
+	    .filter((node) => node.name !== 'Aaji')
             .map((node, topLevelIndex) => (
               <div key={topLevelIndex} className="px-1">
                 {node.children?.map((child, childIndex) =>
@@ -710,7 +712,8 @@ const SingleTreeColumn = () => {
         {/* Mobile: Top-level and children stacked */}
         <div className="sm:hidden flex flex-col gap-4 mt-4">
           {adjustedTreeData
-              .filter((node) => node.name !== 'Aaji')
+              .filter((node) => node.name !== 'Shripal')
+	      .filter((node) => node.name !== 'Aaji')
               .map((node, index) => (
             <div key={index} className=" text-black sm:bg-gray-50 sm:text-gray-800 rounded shadow p-2">
               {/* Top-level */}
