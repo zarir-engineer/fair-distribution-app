@@ -38,7 +38,7 @@ const EightColumnLayout: React.FC<EightColumnLayoutProps> = ({ columns }) => {
   const renderChildren = (children: any[], level = 0) => {
   return children.map((child) => (
 //   <div key={child.id} className={`pl-${level * 4} text-sm truncate`}>
-  <div key={child.id} style={{ paddingLeft: `${level * 20}px` }} className="text-sm truncate">
+  <div key={child.id} style={{ paddingLeft: `${level * 20}px` }} className="text-scaled-sm truncate">
     {child.name} - {child.value.toFixed(3)}
     {child.children && child.children.length > 0 && renderChildren(child.children, level + 1)}
   </div>
@@ -49,7 +49,7 @@ const EightColumnLayout: React.FC<EightColumnLayoutProps> = ({ columns }) => {
 
     <div className="w-full overflow-x-auto">
       {/* Header Row - Resizable */}
-      <div className="flex border-b text-sm font-semibold text-gray-700">
+      <div className="flex border-b text-scaled-sm font-semibold text-gray-700">
         {columns.map((col, index) => (
           <ResizableBox
             key={index}

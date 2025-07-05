@@ -1,0 +1,46 @@
+.
+├── app
+│   ├── api
+│   │   └── proscons
+│   ├── components
+│   │   ├── EightColumnLayout.tsx
+│   │   ├── ProsConsModal.tsx
+│   │   └── SingleTreeColumn.tsx
+│   ├── data
+│   │   ├── headers.ts
+│   │   └── initialTreeData.ts
+│   ├── favicon.ico
+│   ├── globals.css
+│   ├── layout.tsx
+│   ├── page.tsx
+│   ├── page.tsx.orig
+│   └── types
+│       ├── html2pdf.d.ts
+│       └── TreeNode.ts
+├── initial-install.md
+├── lib
+│   └── mongodb.ts
+├── logic.md
+├── next.config.ts
+├── package.json
+├── package-lock.json
+├── pages
+│   └── api
+│       └── pros-cons.ts
+├── postcss.config.js
+├── postcss.config.mjs
+├── public
+│   ├── file.svg
+│   ├── globe.svg
+│   ├── icons
+│   │   ├── lock-red.png
+│   │   └── unlock-green.png
+│   ├── next.svg
+│   ├── vercel.svg
+│   └── window.svg
+├── README.md
+├── tailwind.config.js
+├── tree_structure.txt
+└── tsconfig.json
+
+11 directories, 32 files

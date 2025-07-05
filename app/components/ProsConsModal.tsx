@@ -70,12 +70,12 @@ export default function ProsConsModal({ onClose }: { onClose: () => void }) {
           <X />
         </button>
 
-        <h2 className="text-2xl font-bold mb-4 text-center">Insights</h2>
+        <h2 className="text-scaled-xl font-bold mb-4 text-center">Insights</h2>
 
         <div className="grid grid-cols-2 gap-6">
           {/* Pros */}
           <div>
-            <h3 className="font-semibold text-green-700 mb-2">Pros</h3>
+            <h3 className="font-semibold text-green-700 mb-2 text-scaled-base">Pros</h3>
             <div className="flex flex-wrap gap-2 mb-2">
               {presetOptions.filter(p => p.type === "pro").map((preset, idx) => (
                 <button
@@ -87,7 +87,7 @@ export default function ProsConsModal({ onClose }: { onClose: () => void }) {
                 </button>
               ))}
             </div>
-            <ul className="list-disc list-inside text-sm mb-2">
+            <ul className="list-disc list-inside text-scaled-sm mb-2">
               {items.filter(i => i.type === "pro").map(i => (
                 <li key={i._id} className="flex justify-between">
                   {i.text}

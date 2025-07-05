@@ -424,9 +424,9 @@ const SingleTreeColumn = () => {
 
     const adjustedAmount = totalAmount - (totalAmount * brokeragePercent / 100);
     return (
-      <div key={path.join('-')} className="p-1 border  rounded shadow-sm text-sm">
+      <div key={path.join('-')} className="p-1 border  rounded shadow-sm text-scaled-sm break-words">
         <div className="flex flex-col gap-1">
-          <div className="flex items-center justify-between gap-1">
+          <div className="flex items-center justify-between gap-1 flex-wrap">
             <div className="flex items-center gap-1 min-w-0 sm:w-[100px]">
               {path.length > 0 && !aajiAncestorCheck(path) && currentNode && (
                 <div className="ml-1">
@@ -452,7 +452,7 @@ const SingleTreeColumn = () => {
                   )}
                 </div>
               )}
-              <span className="whitespace-nowrap">{node.name}</span>
+              <span className="break-words whitespace-normal max-w-[10rem]">{node.name}</span>
             </div>
 
             <div className="flex items-center gap-0.5">
@@ -531,14 +531,14 @@ const SingleTreeColumn = () => {
   };
   const printRef = useRef<HTMLDivElement>(null);
   return (
-    <div id="printable-area" className="p-4 text-sm ">
+    <div id="printable-area" className="p-4 text-scaled-sm ">
       {/* Sticky Header */}
       <div className="bg-white shadow-md p-4 sticky top-0 z-10" style={{ minHeight: '150px' }}>
         <div className="grid grid-cols-1 gap-2">
 
           {/* First Row: Title */}
           <div className="flex flex-wrap items-center justify-center sm:justify-center gap-2">
-            <h1 className="text-lg font-semibold text-left sm:text-left sm:w-auto">
+            <h1 className="text-scaled-lg font-semibold text-left sm:text-left sm:w-auto">
               Distribute Fairly App
             </h1>
           </div>
@@ -556,39 +556,43 @@ const SingleTreeColumn = () => {
             </button>
             <button
               onClick={handleDownloadPDF}
-              className="p-1 px-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+              className="p-1 px-2 bg-blue-500 text-white text-scaled-sm rounded hover:bg-blue-600"
             >
               PDF
             </button>
           </div>
 
           {/* Second Row: Centered Controls */}
-          <div className="flex flex-nowrap justify-center items-center gap-2 px-2 py-1 text-sm overflow-x-auto">
+          <div className="flex flex-nowrap justify-center items-center gap-2 px-2 py-1 text-scaled-sm overflow-x-auto">
 
             {/* Total CR */}
             <div className="flex items-center gap-1 min-w-[120px] justify-center">
-              <span className="text-sm font-medium">Total (Cr):</span>
-              <input
-                type="number"
-                min={0}
-                step={1}
-                value={totalAmount}
-                onChange={(e) => setTotalAmount(parseFloat(e.target.value))}
-                className="w-[50px] px-1 py-0.5 border rounded text-sm"
-              />
+              <span className="text-scaled-sm font-medium">Total (Cr):</span>
+	      <div className="scale-[0.9] origin-left">
+		<input
+		  type="number"
+		  min={0}
+		  step={1}
+		  value={totalAmount}
+		  onChange={(e) => setTotalAmount(parseFloat(e.target.value))}
+		  className="w-[50px] px-1 py-0.5 border rounded text-scaled-sm"
+		/>
+	      </div>	
             </div>
 
             {/* Brokerage (%) */}
             <div className="flex items-center gap-1 min-w-[120px] justify-center">
-              <span className="text-sm font-medium">Brokerage (%):</span>
-              <input
-                type="number"
-                min={0}
-                step={0.1}
-                value={isNaN(brokeragePercent) ? '' : brokeragePercent}
-                onChange={(e) => setBrokeragePercent(parseFloat(e.target.value) || 0)}
-                className="w-[50px] px-1 py-0.5 border rounded text-sm"
-              />
+              <span className="text-scaled-sm font-medium">Brokerage (%):</span>
+	      <div className="scale-[0.9] origin-left">
+		<input
+		  type="number"
+		  min={0}
+		  step={0.1}
+		  value={isNaN(brokeragePercent) ? '' : brokeragePercent}
+		  onChange={(e) => setBrokeragePercent(parseFloat(e.target.value) || 0)}
+		  className="w-[50px] px-1 py-0.5 border rounded text-scaled-sm"
+		/>
+	      </div>	
             </div>
 
             {/* Actuals Toggle */}
@@ -620,7 +624,7 @@ const SingleTreeColumn = () => {
               >
                 <div
                   className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
-                    usePercentageOf66 ? 'translate-x-[2.7rem]' : 'translate-x-0'
+                    usePercentageOf66 ? 'translate-x-[3.5rem]' : 'translate-x-[-0.2rem]'
                   }`}
                 />
                 <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-white">
@@ -636,10 +640,10 @@ const SingleTreeColumn = () => {
               .filter((node) => node.name !== 'Aaji')
               .map((node, index) => {
             return (
-              <div key={index} className="p-2 bg-gray-100 bg-white rounded shadow text-center">
-                <div className="flex items-center justify-between border border-gray-300 rounded px-2 py-1  shadow-sm">
+              <div key={index} className="p-2 bg-gray-100 bg-white rounded shadow text-center break-words">
+                <div className="flex flex-col items-center justify-center border border-gray-300 rounded px-2 py-1 shadow-sm">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium whitespace-nowrap">{node.name}</span>
+                    <div className="text-sm font-medium text-center break-words">{node.name}</div>
 
                     {/* Lock/Unlock icon for top-level */}
                     <button
@@ -656,11 +660,11 @@ const SingleTreeColumn = () => {
                   </div>
 
                   {/* Value controls */}
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 mt-1">
                     <button
                       onClick={() => handleChange([index], round(node.value - 0.001))}
                       disabled={node.locked}
-                      className="text-sm px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
+                      className="text-scaled-sm px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
                     >
                       −
                     </button>
@@ -674,7 +678,7 @@ const SingleTreeColumn = () => {
                     <button
                       onClick={() => handleChange([index], round(node.value + 0.001))}
                       disabled={node.locked}
-                      className="text-sm px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
+                      className="text-scaled-sm px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
                     >
                       +
                     </button>
@@ -716,7 +720,7 @@ const SingleTreeColumn = () => {
                   <button
                     onClick={() => handleChange([index], round(node.value - 0.001))}
                     disabled={node.name === 'Aaji' || node.locked}
-                    className="text-sm px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
+                    className="text-scaled-sm px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
                   >
                     −
                   </button>
@@ -730,7 +734,7 @@ const SingleTreeColumn = () => {
                   <button
                     onClick={() => handleChange([index], round(node.value + 0.001))}
                     disabled={node.name === 'Aaji' || node.locked}
-                    className="text-sm px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
+                    className="text-scaled-sm px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50"
                   >
                     +
                   </button>
