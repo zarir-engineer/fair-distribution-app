@@ -602,43 +602,44 @@ const SingleTreeColumn = () => {
                 className="px-2.5 py-1.5 bg-blue-500 text-white text-xs rounded-sm hover:bg-blue-600 whitespace-nowrap"
                 title={showActuals ? "Show Fractions" : "Show Actuals"}
               >
-                {showActuals ? 'Fractions' : 'Actuals'}
+                {showActuals ? 'Fractions/Percentage' : 'Actuals'}
               </button>
             </div>
 
             {/* Percentage Toggle */}
-            <div
-              className={`flex items-center gap-1 transition-opacity duration-300 min-w-[120px] justify-center ${
-                showActuals ? 'opacity-0 invisible' : 'opacity-100 visible'
-              }`}
-            >
-              <span className="font-medium whitespace-nowrap">
-                {usePercentageOf66 ? 'Percentage:' : 'Fraction:'}
-              </span>
-
+            <div className="relative min-w-[280px] h-6 flex items-center justify-center">
               <div
-                onClick={handleTogglePercentage}
-                className={`relative w-20 h-6 flex items-center cursor-pointer rounded-full p-1 transition-colors duration-300 ${
-                  usePercentageOf66 ? 'bg-red-200 hover:bg-red-400' : 'bg-blue-200 hover:bg-blue-400'
+                className={`absolute inset-0 flex items-center gap-1 justify-center transition-opacity duration-300 ${
+                  showActuals ? 'opacity-0 pointer-events-none' : 'opacity-100'
                 }`}
               >
+                <span className="font-medium whitespace-nowrap">
+                  {usePercentageOf66 ? 'Percentage:' : 'Fraction:'}
+                </span>
+
                 <div
-                  className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
-                    usePercentageOf66 ? 'translate-x-[3.5rem]' : 'translate-x-[-0.2rem]'
+                  onClick={handleTogglePercentage}
+                  className={`relative w-20 h-6 flex items-center cursor-pointer rounded-full p-1 transition-colors duration-300 ${
+                    usePercentageOf66 ? 'bg-red-200 hover:bg-red-400' : 'bg-blue-200 hover:bg-blue-400'
                   }`}
-                />
-                <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-white">
-                  {usePercentageOf66 ? '66.67' : '1.000'}
+                >
+                  <div
+                    className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
+                      usePercentageOf66 ? 'translate-x-[3.5rem]' : 'translate-x-[-0.2rem]'
+                    }`}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-white">
+                    {usePercentageOf66 ? '66.67' : '1.000'}
+                  </div>
                 </div>
               </div>
-            </div>
+            </div> 	    
           </div>
         </div>
         {/* Desktop: Separate Grids */}
-        <div className="hidden sm:grid grid-cols-7 gap-2">
+        <div className="hidden sm:grid grid-cols-8 gap-2">
           {adjustedTreeData
-              .filter((node) => node.name !== 'Shripal')
-	      .filter((node) => node.name !== 'Aaji')
+              .filter((node) => ['Sudarshan', 'Ishwar', 'Vigyan', 'Parmesh', 'Pratap', 'Jagdish', 'Shripal', 'Aaji'].includes(node.name))
               .map((node, index) => {
             return (
               <div key={index} className="p-2 bg-gray-100 bg-white rounded shadow text-center break-words">
@@ -696,7 +697,7 @@ const SingleTreeColumn = () => {
       <div className="w-full">
 
         {/* Desktop: Child Grid */}
-        <div className="hidden sm:grid grid-cols-7 gap-2 mt-2">
+        <div className="hidden sm:grid grid-cols-8 gap-2 mt-2">
           {adjustedTreeData
             .filter((node) => node.name !== 'Shripal')
 	    .filter((node) => node.name !== 'Aaji')
@@ -728,12 +729,14 @@ const SingleTreeColumn = () => {
                     −
                   </button>
                   <span className="w-16 text-center border px-2 py-1 rounded bg-white">
-                    {showActuals
-                      ? (getCrValue(node.value, totalAmount, brokeragePercent)).toFixed(2)
-                      : usePercentageOf66
-                      ? (node.value * 66.67).toFixed(2)
-                      : formatAsUnitFraction((node.value * totalAmount) / (totalAmount - (totalAmount * brokeragePercent / 100)))}
-                  </span>
+                    {node.name === 'Shripal'
+                      ? (node.value * 100).toFixed(2) + '%'
+                      : showActuals
+                        ? getCrValue(node.value, totalAmount, brokeragePercent).toFixed(2) + ' Cr'
+                        : usePercentageOf66
+                          ? (node.value * 66.67).toFixed(2) + '%'
+                          : formatAsUnitFraction((node.value * totalAmount) / (totalAmount - (totalAmount * brokeragePercent / 100)))}
+                  </span>                  
                   <button
                     onClick={() => handleChange([index], round(node.value + 0.001))}
                     disabled={node.name === 'Aaji' || node.locked}
